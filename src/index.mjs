@@ -178,12 +178,13 @@ upgradeTab.addEventListener("click", () => {
 
 // Initialize the game
 function initGame() {
-  load();
+  if (localStorage.getItem("stickyNotesGame") != null) load();
   createWorkerElements();
   createUpgradeElements();
   updateMoneyText();
   updateMoneyPerSecondText();
   updateRateDisplays();
+  document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
 
 mainButton.addEventListener("click", () => {
@@ -396,17 +397,4 @@ function deleteSave() {
 
     alert("Save data has been deleted. The game has been reset.");
   }
-}
-
-// Add this event listener at the end of your initGame() function
-function initGame() {
-  load();
-  createWorkerElements();
-  createUpgradeElements();
-  updateMoneyText();
-  updateMoneyPerSecondText();
-  updateRateDisplays();
-
-  // Add this line:
-  document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
