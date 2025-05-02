@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JavaScript Sandbox</title>
+    <meta charset="UTF-8" />
+  </head>
+
+  <body>
+    <main id="main-container">
+      <section class="section" id="main-section">
+        <nav class="nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: 5deg">
+            Games
+          </button>
+          <button class="move-screen-buttons stickynote" style="rotate: -3deg">
+            Settings
+          </button>
+        </nav>
+
+        <div class="left-section">
+          <p id="notes-amount">You have 0 sticky notes</p>
+          <button id="main-stickynote" class="stickynote"></button>
+          <p id="per-sec">0 notes per second</p>
+          <p id="cps">0 cps</p>
+
+          <div class="rate-displays" id="rate-displays" style="display: none">
+            <div class="rate-box" id="upgrade1-rate">Upgrade 1: +0</div>
+            <div class="rate-box" id="upgrade2-rate">Upgrade 2: +0</div>
+            <div class="rate-box" id="total-rate">Total: +0</div>
+          </div>
+        </div>
+        <div class="shop-section"></div>
+      </section>
+
+      <section class="section" id="games-section">
+        <nav class="nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: -9deg">
+            Note
+          </button>
+        </nav>
+      </section>
+
+      <section class="section" id="settings-section">
+        <nav class="nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: 4deg">
+            Note
+          </button>
+        </nav>
+      </section>
+    </main>
+
+    <script src="./index.mjs" type="module"></script>
+  </body>
+</html>
