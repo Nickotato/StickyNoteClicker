@@ -1,6 +1,17 @@
 import "./styles.css";
-import { workers } from "./workers.mjs";
-import { upgrades } from "./upgrades.mjs";
+import { defaultWorkers } from "./workers.mjs";
+import { defaultUpgrades } from "./upgrades.mjs";
+
+const workers = { ...defaultWorkers };
+const upgrades = { ...defaultUpgrades };
+
+const stickyNoteColors = {
+  pink1: "#ff7eb9",
+  pink2: "#ff65a3",
+  yellow1: "#feff9c",
+  yellow2: "#fff740",
+  lightBlue: "#7afcff",
+};
 
 // Screen navigation
 const screenChangeButtons = document.querySelectorAll(".move-screen-buttons");
@@ -88,16 +99,16 @@ function createWorkerElements() {
 
     workerEl.innerHTML = `
       <button class="shop-item-button">${worker.name}</button>
-      <p class="shop-item-text">${worker.description}</p>
-      <p class="shop-item-text">You own ${worker.owned}</p>
+      <p class="shop-item-description">${worker.description}</p>
+      <p class="shop-item-owned">You own ${worker.owned}</p>
       <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
       <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
     `;
 
     workerContent.appendChild(workerEl);
 
-    const button = workerEl;
-    const text = workerEl.querySelector(".shop-item-text");
+    const button = workerEl.querySelector(".shop-item-button");
+    const ownedText = workerEl.querySelector(".shop-item-owned");
     const costText = workerEl.querySelector(".shop-item-cost");
 
     button.addEventListener("click", () => {
@@ -105,7 +116,7 @@ function createWorkerElements() {
         money -= worker.cost;
         worker.owned++;
         worker.cost *= 1.15;
-        text.textContent = `You own ${worker.owned}`;
+        ownedText.textContent = `You own ${worker.owned}`;
         costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
         updateMoneyText();
         updateMoneyPerSecondText();
@@ -167,6 +178,7 @@ upgradeTab.addEventListener("click", () => {
 
 // Initialize the game
 function initGame() {
+  load();
   createWorkerElements();
   createUpgradeElements();
   updateMoneyText();
@@ -281,10 +293,68 @@ function updateRateDisplays() {
   totalRateEl.textContent = `Total bonus: +${totalRate.toFixed(1)}`;
 }
 
+function save() {
+  const gameState = {
+    money: money,
+    workers: workers,
+    upgrades: upgrades,
+    totalClicks: totalClicks,
+    clickTimestamps: clickTimestamps,
+    clickBonus: clickBonus,
+    upgrade1Bonus: upgrade1Bonus,
+    upgrade2Bonus: upgrade2Bonus,
+    totalRate: totalRate,
+  };
+  localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
+}
+
+function load() {
+  const savedGame = localStorage.getItem("stickyNotesGame");
+  if (savedGame) {
+    const gameState = JSON.parse(savedGame);
+    money = gameState.money || 0;
+
+    // Merge loaded workers with defaults
+    if (gameState.workers) {
+      Object.keys(defaultWorkers).forEach((key) => {
+        if (gameState.workers[key]) {
+          workers[key] = { ...defaultWorkers[key], ...gameState.workers[key] };
+        }
+      });
+    }
+
+    // Merge loaded upgrades with defaults
+    if (gameState.upgrades) {
+      Object.keys(defaultUpgrades).forEach((key) => {
+        if (gameState.upgrades[key]) {
+          upgrades[key] = {
+            ...defaultUpgrades[key],
+            ...gameState.upgrades[key],
+          };
+        }
+      });
+    }
+
+    totalClicks = gameState.totalClicks || 0;
+    clickTimestamps = gameState.clickTimestamps || [];
+    clickBonus = gameState.clickBonus || 1;
+    upgrade1Bonus = gameState.upgrade1Bonus || 0;
+    upgrade2Bonus = gameState.upgrade2Bonus || 0;
+    totalRate = gameState.totalRate || 0;
+
+    // Update UI immediately after loading
+    // updateMoneyText();
+    // updateMoneyPerSecondText();
+    // createWorkerElements();
+    // createUpgradeElements();
+  }
+}
+
 function update() {
   money += calculateMoneyPerSecond() / 10;
   updateMoneyPerSecondText();
   updateMoneyText();
+  save();
 }
 
 function updateCPS() {
@@ -297,3 +367,46 @@ setInterval(updateCPS, 100);
 
 // Start the game
 initGame();
+
+// Add this near your other game functions (after load() and save())
+function deleteSave() {
+  if (
+    confirm("Are you sure you want to delete your save? This cannot be undone!")
+  ) {
+    localStorage.removeItem("stickyNotesGame");
+
+    // Reset game state
+    money = 0;
+    totalClicks = 0;
+    clickTimestamps = [];
+    clickBonus = 1;
+    upgrade1Bonus = 0;
+    upgrade2Bonus = 0;
+    totalRate = 0;
+
+    // Reset workers and upgrades to defaults
+    workers = { ...defaultWorkers };
+    upgrades = { ...defaultUpgrades };
+
+    // Update UI
+    updateMoneyText();
+    updateMoneyPerSecondText();
+    createWorkerElements();
+    createUpgradeElements();
+
+    alert("Save data has been deleted. The game has been reset.");
+  }
+}
+
+// Add this event listener at the end of your initGame() function
+function initGame() {
+  load();
+  createWorkerElements();
+  createUpgradeElements();
+  updateMoneyText();
+  updateMoneyPerSecondText();
+  updateRateDisplays();
+
+  // Add this line:
+  document.getElementById("delete-save").addEventListener("click", deleteSave);
+}

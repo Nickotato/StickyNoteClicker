@@ -1,4 +1,4 @@
-export const workers = {
+export const defaultWorkers = {
   worker1: {
     cost: 10,
     owned: 0,

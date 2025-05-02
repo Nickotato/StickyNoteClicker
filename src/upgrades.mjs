@@ -1,4 +1,4 @@
-export const upgrades = {
+export const defaultUpgrades = {
   upgrade1: {
     cost: 10,
     owned: 0,

@@ -39,10 +39,13 @@ body {
 }
 
 #settings-section {
-  background: blue;
+  background: white;
   position: absolute;
   top: 100vh;
   left: 0vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-notes {
@@ -242,4 +245,14 @@ body {
 .rate-box:hover {
   transform: scale(1);
   background: rgba(255, 255, 255, 0.9);
+}
+
+.danger {
+  background-color: #ff7e7e;
+  color: #5c0000;
+  border: 2px solid #ff0000;
+}
+
+.danger:hover {
+  background-color: #ff6565;
 }
