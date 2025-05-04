@@ -66,13 +66,16 @@
           </button>
         </nav>
 
-        <!-- Example pinned notes -->
-        <div class="settings-note" style="--random-rotation: -2deg">
-          <strong>Sound:</strong> On
+        <div class="settings-note" style="--random-rotation: 2deg">
+          <label for="sfx-volume"><strong>Sound Effects Volume:</strong></label>
+          <input type="range" id="sfx-volume" min="0" max="1" step="0.01" value="0.5" />
         </div>
-        <div class="settings-note" style="--random-rotation: 1deg">
-          <strong>Music:</strong> Off
+        
+        <div class="settings-note" style="--random-rotation: -1deg">
+          <label for="music-volume"><strong>Music Volume:</strong></label>
+          <input type="range" id="music-volume" min="0" max="1" step="0.01" value="0.5" />
         </div>
+        
 
         <div
           id="delete-save"

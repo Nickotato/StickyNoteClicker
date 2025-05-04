@@ -1,4 +1,16 @@
 import "./styles.css";
+import {
+  bgMusic,
+  playClickSound,
+  playWhooshSound,
+  playBackgroundMusic,
+  toggleMute,
+  setSoundEffectVolume, setMusicVolume,
+  soundEffectVolume,
+  musicVolume,
+  playSpyglassSound,
+} from "./audio.mjs";
+
 import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
 
@@ -46,6 +58,7 @@ const stickynotes = document.querySelectorAll(".stickynote");
 
 screenChangeButtons.forEach((button) => {
   button.addEventListener("click", () => {
+    playWhooshSound();
     const noSpacesString = button.textContent.trim();
     if (noSpacesString === "Games")
       mainContainer.style.transform = `translate(-100%, 0)`;
@@ -107,6 +120,14 @@ let upgrade1Bonus = 0;
 let upgrade2Bonus = 0;
 let totalRate = 0;
 
+document.addEventListener(
+  "click",
+  () => {
+    playBackgroundMusic();
+  },
+  { once: true }
+);
+
 function createWorkerElements() {
   workerContent.innerHTML = "";
 
@@ -116,7 +137,7 @@ function createWorkerElements() {
 
     const angle = Math.random() * 10 - 5;
     let transform = `rotate(${angle}deg)`;
-    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    if (Math.random() < 0.02) transform += " rotate(180deg)";
     workerEl.style.transform = transform;
 
     workerEl.style.margin = "10px";
@@ -257,6 +278,8 @@ function initGame() {
 }
 
 mainButton.addEventListener("click", (event) => {
+  playClickSound();
+
   if (upgrades.upgrade3.owned > 0)
     clickBonus = 1 * upgrades.upgrade3.value * upgrades.upgrade3.owned;
   money += clickBonus;
@@ -653,3 +676,31 @@ function closeCenteredGame(e) {
     }
   }
 }
+
+////////////////////
+////AUDIO LOGIC////
+//////////////////
+
+const sfxSlider = document.getElementById("sfx-volume");
+const musicSlider = document.getElementById("music-volume");
+
+// Initialize slider positions based on stored or default volume
+sfxSlider.value = soundEffectVolume;
+musicSlider.value = musicVolume;
+
+// Update on change
+sfxSlider.addEventListener("input", (e) => {
+  setSoundEffectVolume(parseFloat(e.target.value));
+});
+
+musicSlider.addEventListener("input", (e) => {
+  setMusicVolume(parseFloat(e.target.value));
+});
+
+
+const settingsNotes = document.querySelectorAll(".settings-note");
+settingsNotes.forEach((note) => {
+  note.addEventListener("mouseenter", () => {
+    playSpyglassSound();
+  })
+})
