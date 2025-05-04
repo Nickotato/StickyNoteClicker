@@ -5,7 +5,8 @@ import {
   playWhooshSound,
   playBackgroundMusic,
   toggleMute,
-  setSoundEffectVolume, setMusicVolume,
+  setSoundEffectVolume,
+  setMusicVolume,
   soundEffectVolume,
   musicVolume,
   playSpyglassSound,
@@ -60,12 +61,13 @@ screenChangeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     playWhooshSound();
     const noSpacesString = button.textContent.trim();
-    if (noSpacesString === "Games")
+    if (noSpacesString === "Games") {
       mainContainer.style.transform = `translate(-100%, 0)`;
-    else if (noSpacesString === "Settings")
+    } else if (noSpacesString === "Settings") {
       mainContainer.style.transform = `translate(0, -100vh)`;
-    else if (noSpacesString === "Note")
+    } else if (noSpacesString === "Note") {
       mainContainer.style.transform = `translate(0, 0)`;
+    }
   });
 });
 
@@ -254,6 +256,10 @@ function createUpgradeElements() {
 }
 
 workerTab.addEventListener("click", () => {
+  if (window.innerWidth <= 768) {
+    shopSection.classList.toggle("open");
+  }
+
   workerTab.classList.add("active");
   upgradeTab.classList.remove("active");
   workerContent.classList.add("active");
@@ -261,6 +267,10 @@ workerTab.addEventListener("click", () => {
 });
 
 upgradeTab.addEventListener("click", () => {
+  if (window.innerWidth <= 768) {
+    shopSection.classList.toggle("open");
+  }
+
   upgradeTab.classList.add("active");
   workerTab.classList.remove("active");
   upgradeContent.classList.add("active");
@@ -384,7 +394,7 @@ function calculateMoneyPerSecond(initial) {
   }
 
   totalRate = moneyPerSec - initialMoneyPerSec;
-  updateRateDisplays();
+  updateRateDisplays(moneyPerSec);
 
   return moneyPerSec;
 }
@@ -397,7 +407,7 @@ function calculateCPS() {
   return clickTimestamps.length;
 }
 
-function updateRateDisplays() {
+function updateRateDisplays(moneyPerSec) {
   const baseRateEl = document.getElementById("base-rate");
   const upgrade1RateEl = document.getElementById("upgrade1-rate");
   const upgrade2RateEl = document.getElementById("upgrade2-rate");
@@ -409,9 +419,9 @@ function updateRateDisplays() {
   upgrade2RateEl.style.display = upgrades.upgrade2.owned > 0 ? "block" : "none";
 
   baseRateEl.textContent = `Base NPS: +${base.toFixed(1)}`;
-  upgrade1RateEl.textContent = `+${upgrade1Bonus.toFixed(1)}`;
-  upgrade2RateEl.textContent = `+${upgrade2Bonus.toFixed(1)}`;
-  totalRateEl.textContent = `Total bonus: +${totalRate.toFixed(1)}`;
+  upgrade1RateEl.textContent = `+${upgrade1Bonus.toFixed(1) / base}x`;
+  upgrade2RateEl.textContent = `+${upgrade2Bonus.toFixed(1) / base}x`;
+  totalRateEl.textContent = `Total bonus: ${moneyPerSec.toFixed(1) / base}x`;
 }
 
 function updateWorkerDescriptions() {
@@ -697,10 +707,41 @@ musicSlider.addEventListener("input", (e) => {
   setMusicVolume(parseFloat(e.target.value));
 });
 
-
 const settingsNotes = document.querySelectorAll(".settings-note");
 settingsNotes.forEach((note) => {
   note.addEventListener("mouseenter", () => {
     playSpyglassSound();
-  })
-})
+  });
+});
+
+///////////////////////////
+////SMALL SCREEN LOGIC////
+/////////////////////////
+
+document.addEventListener("dblclick", function (e) {
+  e.preventDefault();
+});
+
+function moveShopSectionIfMobile() {
+  const shopSection = document.querySelector(".shop-section");
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (
+    isMobile &&
+    shopSection &&
+    shopSection.parentElement.id === "main-section"
+  ) {
+    document.body.insertBefore(
+      shopSection,
+      document.getElementById("main-container")
+    );
+  }
+}
+
+// Run on load
+moveShopSectionIfMobile();
+
+// Also run again if user resizes window across breakpoint
+window.addEventListener("resize", () => {
+  moveShopSectionIfMobile();
+});
