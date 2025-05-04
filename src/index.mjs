@@ -613,9 +613,9 @@ function getGameURL(gameName) {
 
   switch (gameName) {
     case "game1":
-      return "games/snake.html"; // Path relative to index.html
+      return "./games/snake.html"; // Path relative to index.html
     case "game2":
-      return "games/tictactoe.html";
+      return "./games/tictactoe.html";
     default:
       // Optional: handle unknown game names
       console.warn("Attempted to load unknown game:", gameName);
