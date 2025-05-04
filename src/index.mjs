@@ -257,7 +257,8 @@ function createUpgradeElements() {
 
 workerTab.addEventListener("click", () => {
   if (window.innerWidth <= 768) {
-    shopSection.classList.toggle("open");
+    workerTab.classList.contains("active") &&
+      shopSection.classList.toggle("open");
   }
 
   workerTab.classList.add("active");
@@ -268,7 +269,8 @@ workerTab.addEventListener("click", () => {
 
 upgradeTab.addEventListener("click", () => {
   if (window.innerWidth <= 768) {
-    shopSection.classList.toggle("open");
+    upgradeTab.classList.contains("active") &&
+      shopSection.classList.toggle("open");
   }
 
   upgradeTab.classList.add("active");
@@ -347,9 +349,8 @@ function updateMoneyText() {
 }
 
 function updateMoneyPerSecondText() {
-  perSec.textContent = `${calculateMoneyPerSecond().toFixed(
-    0
-  )} notes per second`;
+  const NPS = calculateMoneyPerSecond();
+  perSec.textContent = `${NPS.toFixed(0)} notes per second`;
 }
 
 function calculateMoneyPerSecond(initial) {
@@ -418,10 +419,15 @@ function updateRateDisplays(moneyPerSec) {
   upgrade1RateEl.style.display = upgrades.upgrade1.owned > 0 ? "block" : "none";
   upgrade2RateEl.style.display = upgrades.upgrade2.owned > 0 ? "block" : "none";
 
+  if (base === 0) {
+    console.log("e");
+    return;
+  }
+
   baseRateEl.textContent = `Base NPS: +${base.toFixed(1)}`;
-  upgrade1RateEl.textContent = `+${upgrade1Bonus.toFixed(1) / base}x`;
-  upgrade2RateEl.textContent = `+${upgrade2Bonus.toFixed(1) / base}x`;
-  totalRateEl.textContent = `Total bonus: ${moneyPerSec.toFixed(1) / base}x`;
+  upgrade1RateEl.textContent = `+${(upgrade1Bonus / base).toFixed(1)}x`;
+  upgrade2RateEl.textContent = `+${(upgrade2Bonus / base).toFixed(1)}x`;
+  totalRateEl.textContent = `Total bonus: ${(moneyPerSec / base).toFixed(1)}x`;
 }
 
 function updateWorkerDescriptions() {
