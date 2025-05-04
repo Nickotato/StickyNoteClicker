@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>JavaScript Sandbox</title>
+    <title>THE Sticky Note</title>
     <meta charset="UTF-8" />
   </head>
 
@@ -23,10 +23,11 @@
           <p id="per-sec">0 notes per second</p>
           <p id="cps">0 cps</p>
 
-          <div class="rate-displays" id="rate-displays" style="display: none">
-            <div class="rate-box" id="upgrade1-rate">Upgrade 1: +0</div>
-            <div class="rate-box" id="upgrade2-rate">Upgrade 2: +0</div>
-            <div class="rate-box" id="total-rate">Total: +0</div>
+          <div class="rate-displays" id="rate-displays">
+            <div class="rate-box" id="base-rate">Base NPS: +0</div>
+            <div class="rate-box" id="upgrade1-rate">+0</div>
+            <div class="rate-box" id="upgrade2-rate">+0</div>
+            <div class="rate-box" id="total-rate">Total bonus: +0</div>
           </div>
         </div>
         <div class="shop-section"></div>
@@ -38,7 +39,25 @@
             Note
           </button>
         </nav>
+      
+        <!-- Game Sticky Notes with internal game areas -->
+        <div class="game-notes">
+          <div class="game-note" data-game="game1" id="game1">
+            <div class="game-content">
+              <p>Game 1</p>
+            </div>
+          </div>
+          <div class="game-note" data-game="game2" id="game2">
+            <div class="game-content">
+              <p>Game 2</p>
+            </div>
+          </div>
+          
+        </div>
       </section>
+      
+      
+      
 
       <section class="section" id="settings-section">
         <nav class="nav-notes">
@@ -46,15 +65,23 @@
             Note
           </button>
         </nav>
-        <button
+
+        <!-- Example pinned notes -->
+        <div class="settings-note" style="--random-rotation: -2deg">
+          <strong>Sound:</strong> On
+        </div>
+        <div class="settings-note" style="--random-rotation: 1deg">
+          <strong>Music:</strong> Off
+        </div>
+
+        <div
           id="delete-save"
-          class="stickynote danger"
-          style="rotate: -2deg"
+          class="danger settings-note"
+          style="--random-rotation: -1deg"
         >
           Delete Save
-        </button>
+        </div>
       </section>
-    </main>
 
     <script src="./index.mjs" type="module"></script>
   </body>

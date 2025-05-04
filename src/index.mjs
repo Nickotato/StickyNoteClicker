@@ -2,8 +2,15 @@ import "./styles.css";
 import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
 
-const workers = { ...defaultWorkers };
-const upgrades = { ...defaultUpgrades };
+let workers = {};
+for (const key in defaultWorkers) {
+  workers[key] = {
+    ...defaultWorkers[key],
+    listenerAttached: false, // ✅ add the flag here
+  };
+}
+
+let upgrades = { ...defaultUpgrades };
 
 const stickyNoteColors = {
   pink1: "#ff7eb9",
@@ -13,6 +20,25 @@ const stickyNoteColors = {
   lightBlue: "#7afcff",
 };
 
+// Define color probabilities
+const stickyNoteColorChances = [
+  { color: stickyNoteColors.pink1, chance: 0.16 },
+  { color: stickyNoteColors.pink2, chance: 0.1 },
+  { color: stickyNoteColors.yellow1, chance: 0.4 },
+  { color: stickyNoteColors.yellow2, chance: 0.2 },
+  { color: stickyNoteColors.lightBlue, chance: 0.14 },
+];
+
+function getRandomStickyNoteColor() {
+  const rand = Math.random();
+  let cumulative = 0;
+  for (let entry of stickyNoteColorChances) {
+    cumulative += entry.chance;
+    if (rand < cumulative) return entry.color;
+  }
+  return stickyNoteColorChances[stickyNoteColorChances.length - 1].color;
+}
+
 // Screen navigation
 const screenChangeButtons = document.querySelectorAll(".move-screen-buttons");
 const mainContainer = document.getElementById("main-container");
@@ -20,16 +46,13 @@ const stickynotes = document.querySelectorAll(".stickynote");
 
 screenChangeButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const string = button.textContent;
-    const noSpacesString = string.trim();
-
-    if (noSpacesString === "Games") {
+    const noSpacesString = button.textContent.trim();
+    if (noSpacesString === "Games")
       mainContainer.style.transform = `translate(-100%, 0)`;
-    } else if (noSpacesString === "Settings") {
+    else if (noSpacesString === "Settings")
       mainContainer.style.transform = `translate(0, -100vh)`;
-    } else if (noSpacesString === "Note") {
+    else if (noSpacesString === "Note")
       mainContainer.style.transform = `translate(0, 0)`;
-    }
   });
 });
 
@@ -37,9 +60,7 @@ stickynotes.forEach((note) => {
   note.addEventListener("click", () => {
     if (note.classList.contains("drop-note")) {
       note.classList.add("used");
-      setTimeout(() => {
-        note.classList.remove("used");
-      }, 500);
+      setTimeout(() => note.classList.remove("used"), 500);
     }
   });
 });
@@ -51,7 +72,6 @@ const perSec = document.getElementById("per-sec");
 const cpsText = document.getElementById("cps");
 const shopSection = document.querySelector(".shop-section");
 
-// Create tabs
 const tabsContainer = document.createElement("div");
 tabsContainer.className = "tabs-container";
 shopSection.appendChild(tabsContainer);
@@ -66,7 +86,6 @@ upgradeTab.className = "shop-tab stickynote";
 upgradeTab.textContent = "Upgrades";
 tabsContainer.appendChild(upgradeTab);
 
-// Create content sections
 const workerContent = document.createElement("div");
 workerContent.className = "shop-content active";
 workerContent.id = "worker-content";
@@ -88,62 +107,114 @@ let upgrade1Bonus = 0;
 let upgrade2Bonus = 0;
 let totalRate = 0;
 
-// Create worker elements dynamically
 function createWorkerElements() {
   workerContent.innerHTML = "";
+
   Object.values(workers).forEach((worker) => {
     const workerEl = document.createElement("div");
-    workerEl.className = "shop-item stickynote ";
-    workerEl.style.rotate = `${Math.random() * 10 - 5}deg`;
-    workerEl.style.margin = "10px";
+    workerEl.className = "shop-item stickynote worker-item";
 
-    workerEl.innerHTML = `
-      <button class="shop-item-button">${worker.name}</button>
-      <p class="shop-item-description">${worker.description}</p>
-      <p class="shop-item-owned">You own ${worker.owned}</p>
-      <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
-      <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
-    `;
+    const angle = Math.random() * 10 - 5;
+    let transform = `rotate(${angle}deg)`;
+    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    workerEl.style.transform = transform;
+
+    workerEl.style.margin = "10px";
+    workerEl.style.background = getRandomStickyNoteColor();
+
+    if (!worker.visible && money >= worker.cost * 0.9) {
+      worker.visible = true;
+    }
+    const isUnlocked = worker.visible;
+
+    if (!isUnlocked) {
+      // Show only a big question mark
+      workerEl.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+          <span style="font-size: 64px; color: grey;">?</span>
+        </div>
+      `;
+    } else {
+      // Show full worker details
+      workerEl.innerHTML = `
+        <button class="shop-item-button">${worker.name}</button>
+        <p class="shop-item-description">${worker.description}</p>
+        <p class="shop-item-owned">You own ${worker.owned}</p>
+        <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
+        <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
+      `;
+    }
 
     workerContent.appendChild(workerEl);
 
-    const button = workerEl.querySelector(".shop-item-button");
-    const ownedText = workerEl.querySelector(".shop-item-owned");
-    const costText = workerEl.querySelector(".shop-item-cost");
+    // Enable purchase only if unlocked
+    if (isUnlocked) {
+      const button = workerEl;
+      const ownedText = workerEl.querySelector(".shop-item-owned");
+      const costText = workerEl.querySelector(".shop-item-cost");
 
-    button.addEventListener("click", () => {
-      if (money >= worker.cost) {
-        money -= worker.cost;
-        worker.owned++;
-        worker.cost *= 1.15;
-        ownedText.textContent = `You own ${worker.owned}`;
-        costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
-        updateMoneyText();
-        updateMoneyPerSecondText();
-      }
-    });
+      if (worker.listenerAttached) return;
+      button.addEventListener("click", () => {
+        if (money >= worker.cost) {
+          button.disabled = true; // disable immediately
+          setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
+
+          money -= worker.cost;
+          worker.owned++;
+          worker.cost *= 1.15;
+          ownedText.textContent = `You own ${worker.owned}`;
+          costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
+          updateMoneyText();
+          updateMoneyPerSecondText();
+        }
+      });
+      worker.listenerAttached = true;
+    }
   });
 }
 
-// Create upgrade elements dynamically
 function createUpgradeElements() {
   upgradeContent.innerHTML = "";
   Object.values(upgrades).forEach((upgrade) => {
     const upgradeEl = document.createElement("div");
     upgradeEl.className = "shop-item stickynote";
-    upgradeEl.style.rotate = `${Math.random() * 10 - 5}deg`;
+
+    const angle = Math.random() * 10 - 5;
+    let transform = `rotate(${angle}deg)`;
+    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    upgradeEl.style.transform = transform;
+
     upgradeEl.style.margin = "10px";
+    upgradeEl.style.background = getRandomStickyNoteColor();
+
+    function upgradeAmountText() {
+      if (upgrade.key === "upgrade1") {
+        return `extra ${(
+          upgrades.upgrade1.owned *
+          upgrades.upgrade1.value *
+          100
+        ).toFixed(0)}% of NPS`;
+      } else if (upgrade.key === "upgrade2") {
+        return `${(
+          upgrades.upgrade2.value *
+          upgrades.upgrade2.owned *
+          100
+        ).toFixed(1)}% of cps multiplied by NPS`;
+      } else if (upgrade.key === "upgrade3") {
+        return `You get ${upgrade.owned * upgrade.value} per click`;
+      }
+    }
 
     upgradeEl.innerHTML = `
       <button class="shop-item-button">${upgrade.id}</button>
       <p class="shop-item-description">${upgrade.description}</p>
       <p class="shop-item-cost">Cost: ${upgrade.cost.toFixed(0)}</p>
-      <p class="shop-item-text">Owned: ${upgrade.owned}</p>
+      <p class="shop-item-text">${upgradeAmountText()}</p>
     `;
 
     upgradeContent.appendChild(upgradeEl);
 
-    const button = upgradeEl.querySelector(".shop-item-button");
+    const button = upgradeEl;
     const text = upgradeEl.querySelector(".shop-item-text");
     const costText = upgradeEl.querySelector(".shop-item-cost");
 
@@ -152,8 +223,8 @@ function createUpgradeElements() {
         money -= upgrade.cost;
         upgrade.owned++;
         upgrade.cost =
-          upgrade.id === "upgrade1" ? upgrade.cost * 3 : upgrade.cost * 10;
-        text.textContent = `Owned: ${upgrade.owned}`;
+          upgrade.key === "upgrade1" ? upgrade.cost * 3 : upgrade.cost * 10;
+        text.textContent = `${upgradeAmountText()}`;
         costText.textContent = `Cost: ${upgrade.cost.toFixed(0)}`;
         updateMoneyText();
       }
@@ -161,7 +232,6 @@ function createUpgradeElements() {
   });
 }
 
-// Tab switching
 workerTab.addEventListener("click", () => {
   workerTab.classList.add("active");
   upgradeTab.classList.remove("active");
@@ -176,7 +246,6 @@ upgradeTab.addEventListener("click", () => {
   workerContent.classList.remove("active");
 });
 
-// Initialize the game
 function initGame() {
   if (localStorage.getItem("stickyNotesGame") != null) load();
   createWorkerElements();
@@ -187,37 +256,58 @@ function initGame() {
   document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
 
-mainButton.addEventListener("click", () => {
+mainButton.addEventListener("click", (event) => {
+  if (upgrades.upgrade3.owned > 0)
+    clickBonus = 1 * upgrades.upgrade3.value * upgrades.upgrade3.owned;
   money += clickBonus;
   totalClicks++;
   clickTimestamps.push(Date.now());
   updateMoneyText();
 
+  // 👇 Add visual effect at click
+  const rect = mainButton.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  spawnFloatingNote(x + rect.left, y + rect.top);
+  spawnFloatingNumber(x + rect.left, y + rect.top, clickBonus);
+
   if (!isClicking) {
     isClicking = true;
-    // Smooth fade-in for the displays
     const rateDisplays = document.getElementById("rate-displays");
-    rateDisplays.style.display = "flex";
-    rateDisplays.style.opacity = "0";
-    setTimeout(() => {
-      rateDisplays.style.opacity = "1";
-    }, 10);
+    if (upgrades.upgrade1.owned > 0 || upgrades.upgrade2.owned > 0) {
+      rateDisplays.classList.add("visible");
+    }
   }
 
-  if (clickCooldownTimeout) {
-    clearTimeout(clickCooldownTimeout);
-  }
-
+  if (clickCooldownTimeout) clearTimeout(clickCooldownTimeout);
   clickCooldownTimeout = setTimeout(() => {
     isClicking = false;
-    // Smooth fade-out for the displays
-    const rateDisplays = document.getElementById("rate-displays");
-    rateDisplays.style.opacity = "0";
-    setTimeout(() => {
-      rateDisplays.style.display = "none";
-    }, 300);
-  }, 200);
+    document.getElementById("rate-displays").classList.remove("visible");
+  }, 500);
 });
+
+// 👇 Utility Functions
+function spawnFloatingNote(x, y) {
+  const note = document.createElement("div");
+  note.className = "floating-note";
+  note.style.left = `${x}px`;
+  note.style.top = `${y}px`;
+  note.style.backgroundColor = getRandomStickyNoteColor();
+
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 1200);
+}
+
+function spawnFloatingNumber(x, y, amount) {
+  const number = document.createElement("div");
+  number.className = "floating-number";
+  number.style.left = `${x}px`;
+  number.style.top = `${y}px`;
+  number.textContent = `+${amount}`;
+
+  document.body.appendChild(number);
+  setTimeout(() => number.remove(), 800);
+}
 
 function updateMoneyText() {
   moneyText.textContent = `You have ${money.toFixed(0)} sticky notes`;
@@ -243,12 +333,13 @@ function calculateMoneyPerSecond(initial) {
 
   if (initial === "initial") return initialMoneyPerSec;
 
-  // Reset bonuses
   upgrade1Bonus = 0;
   upgrade2Bonus = 0;
 
-  if (isClicking) {
-    // Show the displays when clicking
+  if (
+    isClicking &&
+    (upgrades.upgrade1.owned > 0 || upgrades.upgrade2.owned > 0)
+  ) {
     rateDisplays.style.display = "flex";
 
     if (upgrades.upgrade1.owned > 0) {
@@ -266,11 +357,10 @@ function calculateMoneyPerSecond(initial) {
       moneyPerSec += upgrade2Bonus;
     }
   } else {
-    // Hide the displays when not clicking
     rateDisplays.style.display = "none";
   }
 
-  totalRate = moneyPerSec - initialMoneyPerSec; // Only show the bonus amount
+  totalRate = moneyPerSec - initialMoneyPerSec;
   updateRateDisplays();
 
   return moneyPerSec;
@@ -285,28 +375,94 @@ function calculateCPS() {
 }
 
 function updateRateDisplays() {
+  const baseRateEl = document.getElementById("base-rate");
   const upgrade1RateEl = document.getElementById("upgrade1-rate");
   const upgrade2RateEl = document.getElementById("upgrade2-rate");
   const totalRateEl = document.getElementById("total-rate");
 
-  upgrade1RateEl.textContent = `Upgrade 1: +${upgrade1Bonus.toFixed(1)}`;
-  upgrade2RateEl.textContent = `Upgrade 2: +${upgrade2Bonus.toFixed(1)}`;
+  const base = calculateMoneyPerSecond("initial");
+
+  upgrade1RateEl.style.display = upgrades.upgrade1.owned > 0 ? "block" : "none";
+  upgrade2RateEl.style.display = upgrades.upgrade2.owned > 0 ? "block" : "none";
+
+  baseRateEl.textContent = `Base NPS: +${base.toFixed(1)}`;
+  upgrade1RateEl.textContent = `+${upgrade1Bonus.toFixed(1)}`;
+  upgrade2RateEl.textContent = `+${upgrade2Bonus.toFixed(1)}`;
   totalRateEl.textContent = `Total bonus: +${totalRate.toFixed(1)}`;
 }
 
+function updateWorkerDescriptions() {
+  const workerItems = document.querySelectorAll(".worker-item");
+
+  workerItems.forEach((workerEl, index) => {
+    const worker = Object.values(workers)[index];
+    // console.log(worker.cost);
+    if (!worker.visible && money >= worker.cost * 0.9) {
+      worker.visible = true;
+    }
+    const isUnlocked = worker.visible;
+
+    if (isUnlocked) {
+      // Reveal full content
+      workerEl.innerHTML = `
+        <button class="shop-item-button">${worker.name}</button>
+        <p class="shop-item-description">${worker.description}</p>
+        <p class="shop-item-owned">You own ${worker.owned}</p>
+        <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
+        <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
+      `;
+
+      // Reattach click handler
+      const button = workerEl;
+      const ownedText = workerEl.querySelector(".shop-item-owned");
+      const costText = workerEl.querySelector(".shop-item-cost");
+
+      if (worker.listenerAttached) return;
+
+      button.addEventListener("click", () => {
+        if (money >= worker.cost) {
+          button.disabled = true; // disable immediately
+          setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
+
+          money -= worker.cost;
+          worker.owned++;
+          worker.cost *= 1.15;
+          ownedText.textContent = `You own ${worker.owned}`;
+          costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
+          updateMoneyText();
+          updateMoneyPerSecondText();
+        }
+      });
+
+      worker.listenerAttached = true; // ✅ Prevent duplicate listeners
+    } else {
+      // Locked state: show one big "?" and remove event listeners by clearing content
+      workerEl.innerHTML = `<div class="locked-worker">?</div>`;
+      const lock = workerEl.querySelector(".locked-worker");
+      lock.style.fontSize = "3em";
+      lock.style.textAlign = "center";
+      lock.style.padding = "20px";
+    }
+  });
+}
+
 function save() {
-  const gameState = {
-    money: money,
-    workers: workers,
-    upgrades: upgrades,
-    totalClicks: totalClicks,
-    clickTimestamps: clickTimestamps,
-    clickBonus: clickBonus,
-    upgrade1Bonus: upgrade1Bonus,
-    upgrade2Bonus: upgrade2Bonus,
-    totalRate: totalRate,
-  };
-  localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
+  try {
+    const gameState = {
+      money,
+      workers,
+      upgrades,
+      totalClicks,
+      clickTimestamps,
+      clickBonus,
+      upgrade1Bonus,
+      upgrade2Bonus,
+      totalRate,
+    };
+    localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
+  } catch (e) {
+    console.error("Failed to save:", e);
+  }
 }
 
 function load() {
@@ -315,16 +471,18 @@ function load() {
     const gameState = JSON.parse(savedGame);
     money = gameState.money || 0;
 
-    // Merge loaded workers with defaults
     if (gameState.workers) {
       Object.keys(defaultWorkers).forEach((key) => {
         if (gameState.workers[key]) {
-          workers[key] = { ...defaultWorkers[key], ...gameState.workers[key] };
+          workers[key] = {
+            ...defaultWorkers[key],
+            ...gameState.workers[key],
+            listenerAttached: false,
+          };
         }
       });
     }
 
-    // Merge loaded upgrades with defaults
     if (gameState.upgrades) {
       Object.keys(defaultUpgrades).forEach((key) => {
         if (gameState.upgrades[key]) {
@@ -342,12 +500,6 @@ function load() {
     upgrade1Bonus = gameState.upgrade1Bonus || 0;
     upgrade2Bonus = gameState.upgrade2Bonus || 0;
     totalRate = gameState.totalRate || 0;
-
-    // Update UI immediately after loading
-    // updateMoneyText();
-    // updateMoneyPerSecondText();
-    // createWorkerElements();
-    // createUpgradeElements();
   }
 }
 
@@ -355,6 +507,7 @@ function update() {
   money += calculateMoneyPerSecond() / 10;
   updateMoneyPerSecondText();
   updateMoneyText();
+  updateWorkerDescriptions();
   save();
 }
 
@@ -365,36 +518,138 @@ function updateCPS() {
 
 setInterval(update, 100);
 setInterval(updateCPS, 100);
-
-// Start the game
 initGame();
 
-// Add this near your other game functions (after load() and save())
 function deleteSave() {
   if (
     confirm("Are you sure you want to delete your save? This cannot be undone!")
   ) {
     localStorage.removeItem("stickyNotesGame");
-
-    // Reset game state
-    money = 0;
+    money = 99999999;
     totalClicks = 0;
     clickTimestamps = [];
     clickBonus = 1;
     upgrade1Bonus = 0;
     upgrade2Bonus = 0;
     totalRate = 0;
-
-    // Reset workers and upgrades to defaults
     workers = { ...defaultWorkers };
     upgrades = { ...defaultUpgrades };
-
-    // Update UI
     updateMoneyText();
     updateMoneyPerSecondText();
     createWorkerElements();
     createUpgradeElements();
-
     alert("Save data has been deleted. The game has been reset.");
+  }
+}
+
+////////////////////
+////GAMES LOGIC////
+//////////////////
+
+document.addEventListener("DOMContentLoaded", () => {
+  const gameNotes = document.querySelectorAll(".game-note");
+
+  gameNotes.forEach((note) => {
+    note.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevents click from closing the note immediately
+      const gameName = note.getAttribute("data-game");
+      showCenteredGame(note, gameName);
+    });
+  });
+
+  // Add event listener to close game notes when clicking outside
+  document.body.addEventListener("click", closeCenteredGame);
+});
+
+function showCenteredGame(note, gameName) {
+  // Get the parent section
+  const gamesSection = document.getElementById("games-section");
+  if (!gamesSection) return; // Safety check
+
+  // Check if overlay already exists in this section
+  let overlay = gamesSection.querySelector(".game-overlay");
+  if (!overlay) {
+    // Add dark overlay inside the games section
+    overlay = document.createElement("div");
+    overlay.classList.add("game-overlay");
+    // Make overlay position absolute relative to gamesSection
+    overlay.style.position = "absolute"; // Change from fixed
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    // z-index is now relative *within* gamesSection
+    overlay.style.zIndex = "5"; // Keep lower than centered note
+    gamesSection.appendChild(overlay); // Append here
+  }
+  overlay.style.display = "flex"; // Ensure it's visible
+
+  // Center the selected game note
+  note.classList.add("centered"); // This should have z-index: 1000 (or just higher than 5)
+
+  // Load the game after the animation
+  setTimeout(() => {
+    loadGame(note, gameName);
+  }, 500); // Wait for animation
+}
+
+function loadGame(note, gameName) {
+  const gameContent = note.querySelector(".game-content");
+
+  // Only load game if it's not already loaded
+  if (gameContent.querySelector("iframe")) return;
+
+  const gameIframe = document.createElement("iframe");
+  gameIframe.src = getGameURL(gameName);
+  gameIframe.style.width = "100%";
+  gameIframe.style.height = "100%";
+  gameIframe.style.border = "none";
+  gameContent.appendChild(gameIframe);
+}
+
+function getGameURL(gameName) {
+  // Assumes game files are inside a 'games' folder
+  // relative to index.html
+
+  switch (gameName) {
+    case "game1":
+      return "./games/snake.html"; // Path relative to index.html
+    case "game2":
+      return "./games/tictactoe.html";
+    default:
+      // Optional: handle unknown game names
+      console.warn("Attempted to load unknown game:", gameName);
+      // You could return a path to a placeholder/error page
+      // return "games/unknown-game.html";
+      return ""; // Or return an empty string
+  }
+}
+
+function closeCenteredGame(e) {
+  // Find the overlay *within* the games section
+  const gamesSection = document.getElementById("games-section");
+  const overlay = gamesSection
+    ? gamesSection.querySelector(".game-overlay")
+    : null;
+  // Find the centered note (could be anywhere if moved, but likely still in gamesSection)
+  const centeredNote = document.querySelector(".game-note.centered");
+
+  // Close if clicking the overlay specifically OR if clicking outside the centered note
+  // when both exist
+  if (overlay && centeredNote) {
+    // If the click target is the overlay OR the click target is NOT the centered note
+    // AND is not a descendant of the centered note
+    if (e.target === overlay || !centeredNote.contains(e.target)) {
+      overlay.style.display = "none"; // Hide overlay instead of removing maybe? Or remove.
+      // overlay.remove(); // Or remove it completely
+
+      centeredNote.classList.remove("centered");
+      const gameContent = centeredNote.querySelector(".game-content");
+      // Clear the iframe or content if needed
+      const iframe = gameContent.querySelector("iframe");
+      if (iframe) iframe.remove();
+      // Add back the placeholder text if desired
+      // gameContent.innerHTML = `<p>${centeredNote.getAttribute('data-game')}</p>`;
+    }
   }
 }

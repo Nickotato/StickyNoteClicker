@@ -1,61 +1,231 @@
 @import url("https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Sniglet:wght@400;800&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap");
 
-/* font-family: "Sniglet", system-ui;
-font-family: "Sour Gummy", sans-serif;
-font-family: "Averia Sans Libre", sans-serif; */
-
 body {
-  font-family: sans-serif;
-  margin: 0px;
-  padding: 0px;
+  font-family: "Sniglet", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  background-color: #fffce0;
 }
 
 #main-container {
-  transition: all 0.5s;
+  transition: transform 0.5s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .section {
   width: 100vw;
   height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 #main-section {
-  background: white;
-  position: absolute;
-  top: 0vh;
-  left: 0vw;
+  background: #ffffff;
+  /* background: linear-gradient(#fffef0, #fffcd1);  */
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  /* border: 3px solid black; */
+  justify-content: space-between;
+  /* padding: 40px; */
+  /* padding-bottom: 40px; */
+  box-sizing: border-box;
+  z-index: 1;
 }
+
+/* GAMES SECTION */
 
 #games-section {
-  background: green;
-  position: absolute;
-  top: 0vh;
+  background: #fefde7;
   left: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: fixed;
 }
 
-#settings-section {
-  background: white;
-  position: absolute;
-  top: 100vh;
-  left: 0vw;
+.game-notes {
   display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 40px;
+}
+
+.game-note {
+  width: 100px;
+  height: 100px;
+  background: #fffc8f;
+  border-radius: 10px;
+  padding: 20px;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 6px 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-note:hover {
+  transform: scale(1.1);
+  filter: brightness(0.95);
+}
+
+.game-note .game-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  transition: opacity 0.5s ease;
+}
+
+.game-note .game-content {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.game-play {
+  display: none;
+}
+
+/* Dark overlay behind the game */
+.game-overlay {
+  /* position: fixed; NO LONGER NEEDED HERE if set to absolute in JS */
+  /* z-index: 5; NO LONGER NEEDED HERE if set in JS */
+  /* Keep other styles like background-color, display etc. */
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex; /* Or none initially, controlled by JS */
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Ensure it fills parent */
+  height: 100%; /* Ensure it fills parent */
+}
+
+/* Centering the game note with tape effect */
+.game-note.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px; /* Adjust the width as necessary */
+  height: 300px; /* Adjust the height as necessary */
+  /* Needs to be higher than the overlay's z-index (5 in JS) */
+  z-index: 10; /* Reduced from 1000, just needs to be > overlay's */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  background: #fffc8f;
+  border-radius: 10px;
+}
+
+.game-note.centered::before,
+.game-note.centered::after {
+  content: "";
+  position: absolute;
+  width: 50px;
+  height: 20px;
+  background: #cfcfcf;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  z-index: 11; /* Higher than the centered note */
+}
+
+.game-note.centered::before {
+  top: -15px;
+  left: 10%;
+}
+
+.game-note.centered::after {
+  top: -15px;
+  right: 10%;
+}
+
+.game-note.centered .game-content {
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.game-note.centered .game-content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* END OF GAMES SECTION */
+
+/* Corkboard background for the settings section */
+#settings-section {
+  background-color: #b47b52;
+  background-image: radial-gradient(#c08a5a 1px, transparent 0),
+    radial-gradient(#c08a5a 1px, transparent 0);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 30px;
+  top: 100vh;
+  box-sizing: border-box;
+  border: 10px solid #8b5a2b; /* wood-like brown */
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Style notes to look like they're pinned */
+.settings-note {
+  width: 180px;
+  height: 180px;
+  background: #feff9c;
+  border-radius: 10px;
+  box-shadow: 2px 6px 12px rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  position: relative;
+  transform: rotate(var(--random-rotation, -3deg));
+  transition: transform 0.2s ease;
+  font-family: "Sniglet", sans-serif;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Push pin effect */
+.settings-note::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background: red;
+  border-radius: 50%;
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+/* Optional hover effect */
+.settings-note:hover {
+  transform: scale(1.05) rotate(var(--random-rotation, -3deg));
+  filter: brightness(0.95);
 }
 
 .nav-notes {
   position: absolute;
   top: 5vh;
   left: 5vh;
+  display: flex;
+  gap: 10px;
 }
 
 .move-screen-buttons {
   margin-right: 20px;
+  cursor: pointer;
 }
 
 .stickynote {
@@ -64,74 +234,65 @@ body {
   height: 100px;
   border: none;
   background: #feff9c;
-  box-shadow: rgba(100, 100, 111, 0.6) 0px 7px 29px 0px;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 6px 10px;
+  border-radius: 10px;
+  padding: 10px;
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .stickynote:hover {
-  filter: brightness(0.9);
+  filter: brightness(0.95);
+  transform: scale(1.05);
 }
+
 .stickynote:active {
   filter: brightness(1.1);
-}
-
-.used {
-  animation: drop-out ease-in 0.5s forwards;
-}
-
-@keyframes drop-out {
-  from {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
-  to {
-    opacity: 0;
-    transform: translate(0, 50vh);
-  }
+  transform: scale(1);
 }
 
 #main-stickynote {
   width: 20vw;
   height: 20vw;
-  transition: 0.2s ease-in-out all;
   background: #feff9c;
   cursor: pointer;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin: 20px 0;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 6px 15px;
 }
 
 #main-stickynote:hover {
-  transform: scale(1.1);
-  background: #feff9c;
-  filter: brightness(1);
+  transform: scale(1.05);
 }
 
 #main-stickynote:active {
-  transition: none;
   transform: scale(1);
-  background: #feff9c;
-  filter: brightness(1);
+  filter: brightness(0.95);
 }
 
 .left-section {
-  width: 60vw;
-  height: 100vh;
+  width: 60%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* Shop styles */
 .shop-section {
+  width: 40%;
+  height: 100%;
+  padding: 30px 20px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  overflow-y: auto;
-  width: 40vw;
-  height: 100vh;
-  /* border-left: 3px solid black; */
-  /* z-index: 2;
-  box-shadow: -10px 0px 10px rgba(0, 0, 0, 0.255); */
+  background: #fefde7;
+  border-left: 3px dashed #d6d35c;
+  box-shadow: -5px 0px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .shop-section::-webkit-scrollbar {
@@ -140,119 +301,173 @@ body {
 
 .tabs-container {
   display: flex;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
-  justify-content: center;
-  background: transparent;
 }
 
 .shop-tab {
-  width: 120px;
-  height: 40px;
+  width: 130px;
+  height: 45px;
+  border: none;
+  background: #fff56c;
+  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 6px;
+  transition: background 0.2s;
 }
 
 .shop-tab.active {
-  background: #ffff00;
+  background: #ffe600;
 }
 
 .shop-content {
   display: none;
   flex-wrap: wrap;
-  gap: 15px;
+  justify-content: center;
+  gap: 20px;
   overflow-y: auto;
   height: calc(100% - 60px);
+}
+
+.shop-content.active {
+  display: flex;
 }
 
 .shop-content::-webkit-scrollbar {
   display: none;
 }
 
-.shop-content.active {
-  display: flex;
-  justify-content: center;
-}
-
 .shop-item {
-  width: 160px;
-  height: 180px;
+  width: 180px;
+  min-height: 200px;
+  background: #feff9c;
   padding: 15px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.1) 2px 6px 12px;
+  transition: transform 0.2s ease;
+  transform: rotate(var(--random-rotate, 0deg));
   justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.shop-item:hover {
+  transform: scale(1.02) rotate(var(--random-rotate, 0deg));
 }
 
 .shop-item-button {
-  background: none;
+  font-weight: bold;
+  background: transparent;
   border: none;
-  font-family: "Sniglet", system-ui;
+  font-size: 16px;
   cursor: pointer;
-  text-align: center;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-.shop-item-button:hover {
-  text-decoration: underline;
-}
-
-.shop-item-text,
+.shop-item-description,
 .shop-item-cost,
+.shop-item-owned,
 .shop-item-produce,
-.shop-item-description {
-  margin: 3px 0;
-  font-family: "Averia Sans Libre", sans-serif;
-  font-size: 0.8rem;
-  text-align: center;
+.shop-item-text {
+  font-size: 14px;
+  margin: 4px 0;
 }
 
-.shop-item-description {
-  font-size: 0.7rem;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-}
-
-#notes-amount,
-#per-sec,
-#cps {
-  font-family: "Averia Sans Libre", sans-serif;
-  margin: 10px 0;
-}
-
-.rate-displays {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
+#rate-displays {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  transition: opacity 0.3s ease;
+  padding: 10px;
+  background: rgba(255, 255, 220, 0.9);
+  border-top-right-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 6px 10px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  z-index: 100;
+  font-size: 14px;
+  font-family: "Sniglet", sans-serif;
+}
+
+#rate-displays.visible {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .rate-box {
-  font-family: "Averia Sans Libre", sans-serif;
-  font-size: 0.8rem;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 5px 10px;
+  background: #ffecc7;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 3px 5px;
+}
+
+#delete-save {
+  /* margin-top: 20px; */
+  background-color: #ff6c6c;
+  color: white;
+  /* font-weight: bold; */
+  /* border-radius: 10px; */
+  transition: all 0.3s ease;
+}
+
+#delete-save:hover {
+  background-color: #e05252;
+  filter: none;
+}
+
+.floating-note,
+.floating-number {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: 999;
+}
+
+.floating-note {
+  width: 40px;
+  height: 40px;
+  background-color: #feff9c;
+  transform: rotate(-10deg);
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transform: scale(0.95);
-  transition: all 0.2s ease;
+  opacity: 1;
+  animation: fall 1.2s ease-out forwards;
 }
 
-.rate-box:hover {
-  transform: scale(1);
-  background: rgba(255, 255, 255, 0.9);
+@keyframes fall {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100px) rotate(20deg);
+    opacity: 0;
+  }
 }
 
-.danger {
-  background-color: #ff7e7e;
-  color: #5c0000;
-  border: 2px solid #ff0000;
+.floating-number {
+  font-size: 20px;
+  font-weight: normal;
+  color: #000;
+  animation: popUp 0.8s ease-out forwards;
 }
 
-.danger:hover {
-  background-color: #ff6565;
+@keyframes popUp {
+  0% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
 }
