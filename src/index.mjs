@@ -3,13 +3,19 @@ import {
   bgMusic,
   playClickSound,
   playWhooshSound,
+  playWhoosh2Sound,
   playBackgroundMusic,
-  toggleMute,
   setSoundEffectVolume,
   setMusicVolume,
   soundEffectVolume,
   musicVolume,
   playSpyglassSound,
+  toggleSfxMute,
+  toggleMusicMute,
+  playClick2Sound,
+  playHoverSound,
+  playOrbSound,
+  playShopSound,
 } from "./audio.mjs";
 
 import { defaultWorkers } from "./workers.mjs";
@@ -179,6 +185,7 @@ function createWorkerElements() {
       if (worker.listenerAttached) return;
       button.addEventListener("click", () => {
         if (money >= worker.cost) {
+          playOrbSound();
           button.disabled = true; // disable immediately
           setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
 
@@ -189,6 +196,8 @@ function createWorkerElements() {
           costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
           updateMoneyText();
           updateMoneyPerSecondText();
+        } else {
+          playHoverSound();
         }
       });
       worker.listenerAttached = true;
@@ -256,28 +265,60 @@ function createUpgradeElements() {
 }
 
 workerTab.addEventListener("click", () => {
+  let before = undefined;
   if (window.innerWidth <= 768) {
-    workerTab.classList.contains("active") &&
-      shopSection.classList.toggle("open");
+    before = toggleShopSection(workerTab, upgradeTab);
   }
 
+  playClick2Sound();
   workerTab.classList.add("active");
   upgradeTab.classList.remove("active");
   workerContent.classList.add("active");
   upgradeContent.classList.remove("active");
+
+  if (window.innerWidth <= 768 && before) {
+    workerTab.classList.remove("active");
+  }
 });
 
 upgradeTab.addEventListener("click", () => {
+  let before = undefined;
   if (window.innerWidth <= 768) {
-    upgradeTab.classList.contains("active") &&
-      shopSection.classList.toggle("open");
+    before = toggleShopSection(upgradeTab, workerTab);
   }
 
+  playClick2Sound();
   upgradeTab.classList.add("active");
   workerTab.classList.remove("active");
   upgradeContent.classList.add("active");
   workerContent.classList.remove("active");
+
+  if (window.innerWidth <= 768 && before) {
+    upgradeTab.classList.remove("active");
+  }
 });
+
+function toggleShopSection(tab, othertab) {
+  if (tab.classList.contains("active")) {
+    shopSection.classList.toggle("open");
+    playWhooshSound();
+    return true;
+  } else if (
+    !(tab.classList.contains("active") || othertab.classList.contains("active"))
+  ) {
+    shopSection.classList.toggle("open");
+    playWhooshSound();
+    return false;
+  } else if (
+    !tab.classList.contains("active") &&
+    othertab.classList.contains("active") &&
+    !shopSection.classList.contains("open")
+  ) {
+    shopSection.classList.toggle("open");
+    playWhooshSound();
+    return false;
+  }
+}
 
 function initGame() {
   if (localStorage.getItem("stickyNotesGame") != null) load();
@@ -290,6 +331,7 @@ function initGame() {
 }
 
 mainButton.addEventListener("click", (event) => {
+  event.stopPropagation();
   playClickSound();
 
   if (upgrades.upgrade3.owned > 0)
@@ -299,12 +341,22 @@ mainButton.addEventListener("click", (event) => {
   clickTimestamps.push(Date.now());
   updateMoneyText();
 
-  // 👇 Add visual effect at click
+  // 👉 Determine spawn position
   const rect = mainButton.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  spawnFloatingNote(x + rect.left, y + rect.top);
-  spawnFloatingNumber(x + rect.left, y + rect.top, clickBonus);
+  let x, y;
+
+  if (event.clientX === 0 && event.clientY === 0) {
+    // Spacebar or keyboard click — center note
+    x = rect.left + rect.width / 2;
+    y = rect.top + rect.height / 2;
+  } else {
+    // Mouse click — use actual position
+    x = event.clientX;
+    y = event.clientY;
+  }
+
+  spawnFloatingNote(x, y);
+  spawnFloatingNumber(x, y, clickBonus);
 
   if (!isClicking) {
     isClicking = true;
@@ -420,7 +472,6 @@ function updateRateDisplays(moneyPerSec) {
   upgrade2RateEl.style.display = upgrades.upgrade2.owned > 0 ? "block" : "none";
 
   if (base === 0) {
-    console.log("e");
     return;
   }
 
@@ -460,6 +511,7 @@ function updateWorkerDescriptions() {
 
       button.addEventListener("click", () => {
         if (money >= worker.cost) {
+          playOrbSound();
           button.disabled = true; // disable immediately
           setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
 
@@ -470,6 +522,8 @@ function updateWorkerDescriptions() {
           costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
           updateMoneyText();
           updateMoneyPerSecondText();
+        } else {
+          playHoverSound();
         }
       });
 
@@ -564,7 +618,7 @@ function deleteSave() {
     confirm("Are you sure you want to delete your save? This cannot be undone!")
   ) {
     localStorage.removeItem("stickyNotesGame");
-    money = 99999999;
+    money = 0;
     totalClicks = 0;
     clickTimestamps = [];
     clickBonus = 1;
@@ -697,27 +751,90 @@ function closeCenteredGame(e) {
 ////AUDIO LOGIC////
 //////////////////
 
-const sfxSlider = document.getElementById("sfx-volume");
-const musicSlider = document.getElementById("music-volume");
+document.addEventListener("DOMContentLoaded", () => {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-// Initialize slider positions based on stored or default volume
-sfxSlider.value = soundEffectVolume;
-musicSlider.value = musicVolume;
+  const sfxSlider = document.getElementById("sfx-volume");
+  const musicSlider = document.getElementById("music-volume");
+  const SFXMuteToggle = document.getElementById("sfx-mute-toggle");
+  const musicMuteToggle = document.getElementById("music-mute-toggle");
+  const sfxMute = document.getElementById("sfx-mute");
+  const musicMute = document.getElementById("music-mute");
 
-// Update on change
-sfxSlider.addEventListener("input", (e) => {
-  setSoundEffectVolume(parseFloat(e.target.value));
-});
+  // Get parent elements for styling
+  const sfxNote = sfxMute.closest(".settings-note");
+  const musicNote = musicMute.closest(".settings-note");
 
-musicSlider.addEventListener("input", (e) => {
-  setMusicVolume(parseFloat(e.target.value));
-});
+  if (isMobile) {
+    // Hide sliders and show mute toggle
+    sfxSlider.closest(".settings-note").style.display = "none";
+    musicSlider.closest(".settings-note").style.display = "none";
+    sfxMute.style.display = "block";
+    musicMute.style.display = "block";
 
-const settingsNotes = document.querySelectorAll(".settings-note");
-settingsNotes.forEach((note) => {
-  note.addEventListener("mouseenter", () => {
-    playSpyglassSound();
-  });
+    let isSFXMuted = false;
+    let isMusicMuted = false;
+
+    // Set initial text
+    SFXMuteToggle.textContent = "Mute";
+    musicMuteToggle.textContent = "Mute";
+
+    // Set initial color
+    sfxNote.classList.add("green");
+    musicNote.classList.add("green");
+
+    sfxMute.addEventListener("click", (e) => {
+      e.stopPropagation();
+      isSFXMuted = !isSFXMuted;
+      SFXMuteToggle.textContent = isSFXMuted ? "Unmute" : "Mute";
+
+      // Toggle dot color
+      sfxNote.classList.toggle("green", !isSFXMuted);
+
+      toggleSfxMute(isSFXMuted);
+    });
+
+    musicMute.addEventListener("click", (e) => {
+      e.stopPropagation();
+      isMusicMuted = !isMusicMuted;
+      musicMuteToggle.textContent = isMusicMuted ? "Unmute" : "Mute";
+
+      // Toggle dot color
+      musicNote.classList.toggle("green", !isMusicMuted);
+
+      toggleMusicMute(isMusicMuted);
+    });
+  } else {
+    // Desktop: initialize sliders
+    sfxSlider.value = soundEffectVolume;
+    musicSlider.value = musicVolume;
+
+    sfxSlider.addEventListener("input", (e) => {
+      setSoundEffectVolume(parseFloat(e.target.value));
+    });
+
+    musicSlider.addEventListener("input", (e) => {
+      setMusicVolume(parseFloat(e.target.value));
+    });
+
+    // Ensure volume is applied on load
+    setSoundEffectVolume(parseFloat(sfxSlider.value));
+    setMusicVolume(parseFloat(musicSlider.value));
+
+    const settingsNotes = document.querySelectorAll(".settings-note");
+    settingsNotes.forEach((note) => {
+      note.addEventListener("mouseenter", () => {
+        playSpyglassSound();
+      });
+    });
+
+    const moveScreenNotes = document.querySelectorAll(".move-screen-buttons");
+    moveScreenNotes.forEach((note) => {
+      note.addEventListener("mouseenter", () => {
+        // Play a Sound
+      });
+    });
+  }
 });
 
 ///////////////////////////
@@ -725,6 +842,7 @@ settingsNotes.forEach((note) => {
 /////////////////////////
 
 document.addEventListener("dblclick", function (e) {
+  e;
   e.preventDefault();
 });
 
@@ -751,3 +869,7 @@ moveShopSectionIfMobile();
 window.addEventListener("resize", () => {
   moveShopSectionIfMobile();
 });
+
+if (window.innerWidth <= 768) {
+  workerTab.classList.remove("active");
+}

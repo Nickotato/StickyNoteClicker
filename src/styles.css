@@ -215,6 +215,11 @@ body {
   z-index: 10;
 }
 
+/* Alternate color via class */
+.settings-note.green::before {
+  background: green;
+}
+
 /* Optional hover effect */
 .settings-note:hover {
   transform: scale(1.05) rotate(var(--random-rotation, -3deg));
@@ -523,8 +528,6 @@ input[type="range"]::-moz-range-thumb:hover {
 /* MEDIA QUERIES  */
 
 @media (max-width: 768px) {
-  #main-container {
-  }
   #main-section {
     flex-direction: column; /* Stack sections vertically on mobile */
   }
@@ -535,8 +538,7 @@ input[type="range"]::-moz-range-thumb:hover {
     box-sizing: border-box;
     justify-content: center;
   }
-  .stickynote {
-  }
+
   .shop-item {
     width: 150px;
     height: 150px;
@@ -620,4 +622,18 @@ input[type="range"]::-moz-range-thumb:hover {
     /* gap: 20px; */
     gap: 0px;
   }
+  .mute-toggle-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: "Sniglet", sans-serif;
+    font-size: 18px;
+    text-align: center;
+  }
+  /* #mute-toggle {
+    background: none;
+    border: none;
+    
+  } */
 }
