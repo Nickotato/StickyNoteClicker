@@ -1,25 +1,20 @@
 import "./styles.css";
 import {
   bgMusic,
-  playClickSound,
-  playWhooshSound,
-  playWhoosh2Sound,
   playBackgroundMusic,
   setSoundEffectVolume,
   setMusicVolume,
   soundEffectVolume,
   musicVolume,
-  playSpyglassSound,
   toggleSfxMute,
   toggleMusicMute,
-  playClick2Sound,
-  playHoverSound,
-  playOrbSound,
-  playShopSound,
+  soundEffects,
+  playSoundEffects,
 } from "./audio.mjs";
 
 import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
+import { defaultAchievements } from "./achievements.mjs";
 
 let workers = {};
 for (const key in defaultWorkers) {
@@ -30,6 +25,7 @@ for (const key in defaultWorkers) {
 }
 
 let upgrades = { ...defaultUpgrades };
+let achievements = [...defaultAchievements];
 
 const stickyNoteColors = {
   pink1: "#ff7eb9",
@@ -65,7 +61,7 @@ const stickynotes = document.querySelectorAll(".stickynote");
 
 screenChangeButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    playWhooshSound();
+    playSoundEffects(soundEffects.whoosh1);
     const noSpacesString = button.textContent.trim();
     if (noSpacesString === "Games") {
       mainContainer.style.transform = `translate(-100%, 0)`;
@@ -73,6 +69,8 @@ screenChangeButtons.forEach((button) => {
       mainContainer.style.transform = `translate(0, -100vh)`;
     } else if (noSpacesString === "Note") {
       mainContainer.style.transform = `translate(0, 0)`;
+    } else if (noSpacesString === "Achievements") {
+      mainContainer.style.transform = `translate(-100%, -100vh)`;
     }
   });
 });
@@ -119,6 +117,7 @@ shopSection.appendChild(upgradeContent);
 
 let money = 0;
 let totalClicks = 0;
+let totalNotes = 0;
 let clickTimestamps = [];
 const CPS_WINDOW_MS = 1000;
 let isClicking = false;
@@ -127,6 +126,8 @@ let clickCooldownTimeout = null;
 let upgrade1Bonus = 0;
 let upgrade2Bonus = 0;
 let totalRate = 0;
+let unlockedAchievements = 0;
+let totalAchievements = achievements.length;
 
 document.addEventListener(
   "click",
@@ -147,6 +148,14 @@ function createWorkerElements() {
     let transform = `rotate(${angle}deg)`;
     if (Math.random() < 0.02) transform += " rotate(180deg)";
     workerEl.style.transform = transform;
+
+    workerEl.addEventListener("mouseenter", () => {
+      workerEl.style.transform = "rotate(0deg)";
+    });
+
+    workerEl.addEventListener("mouseleave", () => {
+      workerEl.style.transform = transform;
+    });
 
     workerEl.style.margin = "10px";
     workerEl.style.background = getRandomStickyNoteColor();
@@ -185,7 +194,7 @@ function createWorkerElements() {
       if (worker.listenerAttached) return;
       button.addEventListener("click", () => {
         if (money >= worker.cost) {
-          playOrbSound();
+          playSoundEffects(soundEffects.orb);
           button.disabled = true; // disable immediately
           setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
 
@@ -197,7 +206,7 @@ function createWorkerElements() {
           updateMoneyText();
           updateMoneyPerSecondText();
         } else {
-          playHoverSound();
+          playSoundEffects(soundEffects.hover);
         }
       });
       worker.listenerAttached = true;
@@ -233,7 +242,9 @@ function createUpgradeElements() {
           100
         ).toFixed(1)}% of cps multiplied by NPS`;
       } else if (upgrade.key === "upgrade3") {
-        return `You get ${upgrade.owned * upgrade.value} per click`;
+        return `You get ${upgrade.value ** upgrade.owned} per click`;
+      } else if (upgrade.key === "upgrade4") {
+        return `You get ${upgrade.value * upgrade.owned * 100}% of notes earned offline`
       }
     }
 
@@ -254,8 +265,7 @@ function createUpgradeElements() {
       if (money >= upgrade.cost) {
         money -= upgrade.cost;
         upgrade.owned++;
-        upgrade.cost =
-          upgrade.key === "upgrade1" ? upgrade.cost * 3 : upgrade.cost * 10;
+        upgrade.cost *= findUpgradeCost(upgrade.key);
         text.textContent = `${upgradeAmountText()}`;
         costText.textContent = `Cost: ${upgrade.cost.toFixed(0)}`;
         updateMoneyText();
@@ -264,13 +274,21 @@ function createUpgradeElements() {
   });
 }
 
+function findUpgradeCost(key) {
+  if (key === "upgrade1") return 3;
+  else if (key === "upgrade2") return 10;
+  else if (key === "upgrade3") return 5;
+  else if (key === "upgrade4") return 2;
+  else if (key === "upgrade5") return 2;
+}
+
 workerTab.addEventListener("click", () => {
   let before = undefined;
   if (window.innerWidth <= 768) {
     before = toggleShopSection(workerTab, upgradeTab);
   }
 
-  playClick2Sound();
+  playSoundEffects(soundEffects.click2);
   workerTab.classList.add("active");
   upgradeTab.classList.remove("active");
   workerContent.classList.add("active");
@@ -287,7 +305,7 @@ upgradeTab.addEventListener("click", () => {
     before = toggleShopSection(upgradeTab, workerTab);
   }
 
-  playClick2Sound();
+  playSoundEffects(soundEffects.click2);
   upgradeTab.classList.add("active");
   workerTab.classList.remove("active");
   upgradeContent.classList.add("active");
@@ -301,13 +319,13 @@ upgradeTab.addEventListener("click", () => {
 function toggleShopSection(tab, othertab) {
   if (tab.classList.contains("active")) {
     shopSection.classList.toggle("open");
-    playWhooshSound();
+    playSoundEffects(soundEffects.whoosh1);
     return true;
   } else if (
     !(tab.classList.contains("active") || othertab.classList.contains("active"))
   ) {
     shopSection.classList.toggle("open");
-    playWhooshSound();
+    playSoundEffects(soundEffects.whoosh1);
     return false;
   } else if (
     !tab.classList.contains("active") &&
@@ -315,7 +333,7 @@ function toggleShopSection(tab, othertab) {
     !shopSection.classList.contains("open")
   ) {
     shopSection.classList.toggle("open");
-    playWhooshSound();
+    playSoundEffects(soundEffects.whoosh1);
     return false;
   }
 }
@@ -327,16 +345,23 @@ function initGame() {
   updateMoneyText();
   updateMoneyPerSecondText();
   updateRateDisplays();
+  updateAchievementStats();
+  achievements.forEach(ach => {
+    console.log(ach);
+    if (ach.unlocked) addAchievementNote(ach.id);
+  })
+  
   document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
 
 mainButton.addEventListener("click", (event) => {
   event.stopPropagation();
-  playClickSound();
+  playSoundEffects(soundEffects.click1);
 
   if (upgrades.upgrade3.owned > 0)
-    clickBonus = 1 * upgrades.upgrade3.value * upgrades.upgrade3.owned;
+    clickBonus = 1 * upgrades.upgrade3.value ** upgrades.upgrade3.owned;
   money += clickBonus;
+  totalNotes += clickBonus;
   totalClicks++;
   clickTimestamps.push(Date.now());
   updateMoneyText();
@@ -347,8 +372,8 @@ mainButton.addEventListener("click", (event) => {
 
   if (event.clientX === 0 && event.clientY === 0) {
     // Spacebar or keyboard click — center note
-    x = rect.left + rect.width / 2;
-    y = rect.top + rect.height / 2;
+    x = rect.left + rect.width / 2 - 10;
+    y = rect.top + rect.height / 2 - 50;
   } else {
     // Mouse click — use actual position
     x = event.clientX;
@@ -511,7 +536,7 @@ function updateWorkerDescriptions() {
 
       button.addEventListener("click", () => {
         if (money >= worker.cost) {
-          playOrbSound();
+          playSoundEffects(soundEffects.orb);
           button.disabled = true; // disable immediately
           setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
 
@@ -523,7 +548,7 @@ function updateWorkerDescriptions() {
           updateMoneyText();
           updateMoneyPerSecondText();
         } else {
-          playHoverSound();
+          playSoundEffects(soundEffects.hover);
         }
       });
 
@@ -546,13 +571,16 @@ function save() {
       workers,
       upgrades,
       totalClicks,
+      totalNotes,
       clickTimestamps,
       clickBonus,
       upgrade1Bonus,
       upgrade2Bonus,
       totalRate,
+      achievements,
     };
     localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
+    localStorage.setItem("lastOnline", Date.now());
   } catch (e) {
     console.error("Failed to save:", e);
   }
@@ -567,9 +595,15 @@ function load() {
     if (gameState.workers) {
       Object.keys(defaultWorkers).forEach((key) => {
         if (gameState.workers[key]) {
+          const owned = gameState.workers[key].owned || 0;
+          const baseCost = defaultWorkers[key].cost;
+          const newCost = Math.floor(baseCost * Math.pow(1.15, owned));
+
           workers[key] = {
             ...defaultWorkers[key],
-            ...gameState.workers[key],
+            owned: owned,
+            visible: gameState.workers[key].visible || false,
+            cost: newCost,
             listenerAttached: false,
           };
         }
@@ -581,26 +615,70 @@ function load() {
         if (gameState.upgrades[key]) {
           upgrades[key] = {
             ...defaultUpgrades[key],
-            ...gameState.upgrades[key],
+            owned: gameState.upgrades[key].owned,
+            cost: gameState.upgrades[key].cost,
           };
         }
       });
+
+      
     }
 
+    // Convert array to object keyed by id
+    const defaultAchievementsMap = Object.fromEntries(
+      defaultAchievements.map((ach) => [ach.id, ach])
+    );
+
+
+    if (gameState.achievements) {
+      achievements = defaultAchievements.map((ach) => {
+        const saved = gameState.achievements[ach.id];
+        return {
+          ...ach,
+          unlocked: saved ? saved.unlocked : ach.unlocked,
+        };
+      });
+    }
+
+
     totalClicks = gameState.totalClicks || 0;
+    totalNotes = gameState.totalNotes || 0;
     clickTimestamps = gameState.clickTimestamps || [];
     clickBonus = gameState.clickBonus || 1;
     upgrade1Bonus = gameState.upgrade1Bonus || 0;
     upgrade2Bonus = gameState.upgrade2Bonus || 0;
     totalRate = gameState.totalRate || 0;
+
+    if (upgrades.upgrade4.owned > 0) {
+      const lastOnline = parseInt(
+        localStorage.getItem("lastOnline") || Date.now()
+      );
+      const now = Date.now();
+      const secondsOffline = Math.floor((now - lastOnline) / 1000);
+      const moneyPerSecond = calculateMoneyPerSecond("initial");
+      const offlineMultiplier =
+        upgrades.upgrade4.owned * upgrades.upgrade4.value;
+      const offlineEarnings =
+        secondsOffline * moneyPerSecond * offlineMultiplier;
+      money += offlineEarnings;
+      alert(
+        `You were away for ${secondsOffline} seconds and earned $${offlineEarnings.toFixed(
+          0
+        )}!`
+      );
+    }
   }
 }
 
 function update() {
   money += calculateMoneyPerSecond() / 10;
+  totalNotes += calculateMoneyPerSecond() / 10;
   updateMoneyPerSecondText();
   updateMoneyText();
   updateWorkerDescriptions();
+
+  checkForAchievements();
+
   save();
 }
 
@@ -620,6 +698,7 @@ function deleteSave() {
     localStorage.removeItem("stickyNotesGame");
     money = 0;
     totalClicks = 0;
+    totalNotes = 0;
     clickTimestamps = [];
     clickBonus = 1;
     upgrade1Bonus = 0;
@@ -627,6 +706,7 @@ function deleteSave() {
     totalRate = 0;
     workers = { ...defaultWorkers };
     upgrades = { ...defaultUpgrades };
+    achievements = [...defaultAchievements];
     updateMoneyText();
     updateMoneyPerSecondText();
     createWorkerElements();
@@ -824,7 +904,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const settingsNotes = document.querySelectorAll(".settings-note");
     settingsNotes.forEach((note) => {
       note.addEventListener("mouseenter", () => {
-        playSpyglassSound();
+        playSoundEffects(soundEffects.spyglass);
       });
     });
 
@@ -872,4 +952,74 @@ window.addEventListener("resize", () => {
 
 if (window.innerWidth <= 768) {
   workerTab.classList.remove("active");
+}
+
+///////////////////////////
+////ACHIEVEMENTS LOGIC////
+/////////////////////////
+
+function checkForAchievements() {
+  if (totalNotes >= 1) {
+    unlockAchievement("firstNote");
+  }
+  if (totalNotes >= 100) {
+    unlockAchievement("hundredNotes");
+  }
+}
+
+function unlockAchievement(id) {
+  const achievement = achievements.find((a) => a.id === id);
+
+  if (achievement && !achievement.unlocked) {
+    unlockedAchievements++;
+    achievement.unlocked = true;
+    showAchievementNotification(achievement);
+    addAchievementNote(achievement);
+    updateAchievementStats();
+  }
+}
+
+function showAchievementNotification(achievement) {
+  const container = document.getElementById("achievement-popup-container");
+  const popup = document.createElement("div");
+  popup.className = "achievement-popup slide-in";
+  popup.innerHTML = `
+    <strong>${achievement.name}</strong><br>
+    <small>${achievement.description}</small>
+  `;
+
+  // Inline base styles
+  popup.style.cssText = `
+  background: #feff9c; color: white; padding: 12px 20px;
+  margin-top: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  text-align: center; min-width: 200px;
+  position: relative;
+  animation: slideIn 0.4s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
+  font-family: "Sniglet", sans-serif;
+`;
+
+  container.appendChild(popup);
+
+  // Remove from DOM after animation
+  setTimeout(() => {
+    container.removeChild(popup);
+  }, 3000);
+}
+
+function addAchievementNote(achievement) {
+  const achievementSection = document.getElementById("achievements-section");
+  const achievementNote = document.createElement("div");
+  achievementNote.className = "stickynote achievements-note";
+  achievementNote.innerHTML = `
+  <strong>${achievement.name}</strong><br>
+  <small>${achievement.description}</small>
+`;
+
+  achievementSection.appendChild(achievementNote);
+}
+
+function updateAchievementStats() {
+  const achievementNumber = document.getElementById("achievements-number");
+
+  achievementNumber.textContent = `${unlockedAchievements} / ${totalAchievements}`;
 }

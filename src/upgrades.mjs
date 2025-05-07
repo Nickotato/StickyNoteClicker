@@ -24,4 +24,13 @@ export const defaultUpgrades = {
     id: "Big Bucks",
     description: "Gain double per click",
   },
+  upgrade4: {
+    cost: 100,
+    owned: 0,
+    value: 0.05,
+    key: "upgrade4",
+    id: "Summer Vacation",
+    description:
+      "During offline time, collect a percentage of the amount produced",
+  },
 };

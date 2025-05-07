@@ -49,18 +49,8 @@ export const defaultWorkers = {
     visible: false,
     listenerAttached: false,
   },
-  coffeeIntern: {
-    cost: 20000,
-    owned: 0,
-    produce: 20,
-    id: "coffeeIntern",
-    name: "Coffee Intern",
-    description: "Energizes the office and occasionally makes a decent latte.",
-    visible: false,
-    listenerAttached: false,
-  },
   worker6: {
-    cost: 50000,
+    cost: 20000,
     owned: 0,
     produce: 70,
     id: "worker6",
@@ -69,10 +59,31 @@ export const defaultWorkers = {
     visible: false,
     listenerAttached: false,
   },
-  printerGoblin: {
+  onlineShopping: {
+    cost: 50000,
+    owned: 0,
+    produce: 100,
+    id: "onlineShopping",
+    name: "Online Shopping",
+    description: "You only get scammed, sometimes.",
+    visible: false,
+    listenerAttached: false,
+  },
+  coffeeIntern: {
     cost: 80000,
     owned: 0,
-    produce: 80,
+    produce: 120,
+    id: "coffeeIntern",
+    name: "Coffee Intern",
+    description: "Energizes the office and occasionally makes a decent latte.",
+    visible: false,
+    listenerAttached: false,
+  },
+
+  printerGoblin: {
+    cost: 100000,
+    owned: 0,
+    produce: 140,
     id: "printerGoblin",
     name: "Printer Goblin",
     description:
@@ -83,7 +94,7 @@ export const defaultWorkers = {
   internetAdBot: {
     cost: 150000,
     owned: 0,
-    produce: 150,
+    produce: 180,
     id: "internetAdBot",
     name: "Internet Ad Bot",
     description: "Runs ads for sticky notes you didn’t know you needed.",

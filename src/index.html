@@ -9,6 +9,10 @@
 
   <body>
     <main id="main-container">
+      <div id="achievement-popup-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>
+
+
+
       <section class="section" id="main-section">
         <nav class="nav-notes">
           <button class="move-screen-buttons stickynote" style="rotate: 5deg">
@@ -21,7 +25,7 @@
 
         <div class="left-section">
           <p id="notes-amount">You have 0 sticky notes</p>
-          <button id="main-stickynote" class="stickynote"></button>
+          <button id="main-stickynote" oncontextmenu="return false;" class="stickynote"></button>
           <p id="per-sec">0 notes per second</p>
           <p id="cps">0 cps</p>
 
@@ -67,6 +71,9 @@
           <button class="move-screen-buttons stickynote" style="rotate: 4deg">
             Note
           </button>
+          <button class="move-screen-buttons stickynote" style="rotate: -3deg">
+            Achievements
+          </button>
         </nav>
 
         <div class="settings-note" style="--random-rotation: 2deg">
@@ -96,6 +103,19 @@
         </div>
       </section>
 
+
+      <section class="section" id="achievements-section">
+        <nav class="nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: 2deg">
+            Settings
+          </button>
+        </nav>
+        <div id="top-right-achievement-notes">
+          <div class="stickynote" id="achievements-number">
+            3/4
+          </div>
+        </div>
+      </section>
     <script src="./index.mjs" type="module"></script>
   </body>
 </html>
