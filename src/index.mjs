@@ -815,13 +815,14 @@ function loadGame(note, gameName) {
   gameIframe.style.width = "100%";
   gameIframe.style.height = "100%";
   gameIframe.style.border = "none";
+  console.log(gameIframe);
   gameContent.appendChild(gameIframe);
 }
 
 function getGameURL(gameName) {
   // Assumes game files are inside a 'games' folder
   // relative to index.html
-
+const gameString = JSON.stringify(gameName);
   switch (gameName) {
     case "game1":
       return "./games/snake.html"; // Path relative to index.html
@@ -995,6 +996,7 @@ if (window.innerWidth <= 768) {
 ///////////////////////////
 ////ACHIEVEMENTS LOGIC////
 /////////////////////////
+
 function checkForAchievements() {
   if (totalNotes >= 1) {
     unlockAchievement("firstNote");
@@ -1092,3 +1094,23 @@ function updateAchievementStats() {
 
   achievementNumber.textContent = `${unlockedAchievements} / ${totalAchievements}`;
 }
+
+
+
+////////////////////////
+////ADMIN FUNCTIONS////
+//////////////////////
+
+// Expose a secret function globally
+window.unlockSecret = function(code) {
+  if (code === "money123") {
+    console.log("%cYou unlocked 9999999999999 notes!", "color: gold; font-size: 16px;");
+    money = 9999999999999
+  } else if (code === "achievements") {
+    achievements.forEach((ach) => {
+      unlockAchievement(ach.id);
+    })
+  }else {
+    console.log("Invalid code.");
+  }
+};
