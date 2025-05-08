@@ -8,8 +8,8 @@
   </head>
 
   <body>
+    <div id="achievement-popup-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>
     <main id="main-container">
-      <div id="achievement-popup-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>
 
 
 
@@ -25,7 +25,7 @@
 
         <div class="left-section">
           <p id="notes-amount">You have 0 sticky notes</p>
-          <button id="main-stickynote" oncontextmenu="return false;" class="stickynote"></button>
+          <button id="main-stickynote" oncontextmenu="return false;" class="stickynote no-select"></button>
           <p id="per-sec">0 notes per second</p>
           <p id="cps">0 cps</p>
 
@@ -112,7 +112,7 @@
         </nav>
         <div id="top-right-achievement-notes">
           <div class="stickynote" id="achievements-number">
-            3/4
+            0/0
           </div>
         </div>
       </section>

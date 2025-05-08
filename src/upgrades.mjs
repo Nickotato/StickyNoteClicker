@@ -28,9 +28,19 @@ export const defaultUpgrades = {
     cost: 100,
     owned: 0,
     value: 0.05,
+    max: 20,
     key: "upgrade4",
     id: "Summer Vacation",
     description:
       "During offline time, collect a percentage of the amount produced",
+  },
+  upgrade5: {
+    cost: 100000,
+    owned: 0,
+    value: 2,
+    max: 1,
+    key: "upgrade5",
+    id: "Super Glue",
+    description: "Makes Sticky Notes stickier, thus, doubling their value",
   },
 };

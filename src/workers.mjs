@@ -121,6 +121,16 @@ export const defaultWorkers = {
     visible: false,
     listenerAttached: false,
   },
+  humanResources: {
+    cost: 1000000,
+    owned: 0,
+    produce: 1200,
+    id: "humanResources",
+    name: "Human Resources",
+    description: "Perhaps allowing hats on friday will cure their depression?",
+    visible: false,
+    listenerAttached: false,
+  },
   quantumTaskScheduler: {
     cost: 5000000,
     owned: 0,

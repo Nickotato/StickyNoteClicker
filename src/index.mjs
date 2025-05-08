@@ -142,7 +142,7 @@ function createWorkerElements() {
 
   Object.values(workers).forEach((worker) => {
     const workerEl = document.createElement("div");
-    workerEl.className = "shop-item stickynote worker-item";
+    workerEl.className = "shop-item stickynote worker-item no-select";
 
     const angle = Math.random() * 10 - 5;
     let transform = `rotate(${angle}deg)`;
@@ -218,7 +218,7 @@ function createUpgradeElements() {
   upgradeContent.innerHTML = "";
   Object.values(upgrades).forEach((upgrade) => {
     const upgradeEl = document.createElement("div");
-    upgradeEl.className = "shop-item stickynote";
+    upgradeEl.className = "shop-item stickynote no-select";
 
     const angle = Math.random() * 10 - 5;
     let transform = `rotate(${angle}deg)`;
@@ -227,6 +227,11 @@ function createUpgradeElements() {
 
     upgradeEl.style.margin = "10px";
     upgradeEl.style.background = getRandomStickyNoteColor();
+
+    if (upgrade.owned >= upgrade.max) {
+      upgradeEl.style.filter = `brightness(0.7)`
+      upgradeEl.style.transition = `all 0.2s ease-in-out`;
+    };
 
     function upgradeAmountText() {
       if (upgrade.key === "upgrade1") {
@@ -244,7 +249,11 @@ function createUpgradeElements() {
       } else if (upgrade.key === "upgrade3") {
         return `You get ${upgrade.value ** upgrade.owned} per click`;
       } else if (upgrade.key === "upgrade4") {
-        return `You get ${upgrade.value * upgrade.owned * 100}% of notes earned offline`
+        return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
+          0
+        )}% of notes earned offline`;
+      } else if (upgrade.key === "upgrade5") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
       }
     }
 
@@ -263,11 +272,23 @@ function createUpgradeElements() {
 
     button.addEventListener("click", () => {
       if (money >= upgrade.cost) {
+        if (upgrade.key === "upgrade4" && upgrade.owned >= upgrade.max) {
+          alert("cannot go above 100%");
+          return;
+        } else if (upgrade.key === "upgrade5" && upgrade.owned >= upgrade.max) {
+          alert("Cannot buy more than 1");
+          return;
+        }
         money -= upgrade.cost;
+        playSoundEffects(soundEffects.orb);
         upgrade.owned++;
         upgrade.cost *= findUpgradeCost(upgrade.key);
         text.textContent = `${upgradeAmountText()}`;
         costText.textContent = `Cost: ${upgrade.cost.toFixed(0)}`;
+        if (upgrade.owned >= upgrade.max) {
+          button.style.filter = `brightness(0.7)`
+          button.style.transition = `all 0.2s ease-in-out`;
+        };
         updateMoneyText();
       }
     });
@@ -278,8 +299,8 @@ function findUpgradeCost(key) {
   if (key === "upgrade1") return 3;
   else if (key === "upgrade2") return 10;
   else if (key === "upgrade3") return 5;
-  else if (key === "upgrade4") return 2;
-  else if (key === "upgrade5") return 2;
+  else if (key === "upgrade4") return 5;
+  else if (key === "upgrade5") return 1;
 }
 
 workerTab.addEventListener("click", () => {
@@ -346,11 +367,11 @@ function initGame() {
   updateMoneyPerSecondText();
   updateRateDisplays();
   updateAchievementStats();
-  achievements.forEach(ach => {
-    console.log(ach);
-    if (ach.unlocked) addAchievementNote(ach.id);
-  })
-  
+  // achievements.forEach((ach) => {
+  //   console.log(ach);
+  //   if (ach.unlocked) addAchievementNote(ach.id);
+  // });
+
   document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
 
@@ -386,8 +407,18 @@ mainButton.addEventListener("click", (event) => {
   if (!isClicking) {
     isClicking = true;
     const rateDisplays = document.getElementById("rate-displays");
+
     if (upgrades.upgrade1.owned > 0 || upgrades.upgrade2.owned > 0) {
-      rateDisplays.classList.add("visible");
+      // Remove class in case it was already applied
+      rateDisplays.classList.remove("visible");
+
+      // Trigger reflow (forces browser to recognize the start state)
+      void rateDisplays.offsetWidth;
+
+      // Add class on next animation frame
+      requestAnimationFrame(() => {
+        rateDisplays.classList.add("visible");
+      });
     }
   }
 
@@ -473,6 +504,10 @@ function calculateMoneyPerSecond(initial) {
 
   totalRate = moneyPerSec - initialMoneyPerSec;
   updateRateDisplays(moneyPerSec);
+
+  if (upgrades.upgrade5.owned > 0) {
+    moneyPerSec *= upgrades.upgrade5.value;
+  }
 
   return moneyPerSec;
 }
@@ -578,6 +613,7 @@ function save() {
       upgrade2Bonus,
       totalRate,
       achievements,
+      unlockedAchievements,
     };
     localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
     localStorage.setItem("lastOnline", Date.now());
@@ -620,29 +656,31 @@ function load() {
           };
         }
       });
-
-      
     }
 
-    // Convert array to object keyed by id
-    const defaultAchievementsMap = Object.fromEntries(
-      defaultAchievements.map((ach) => [ach.id, ach])
-    );
-
-
     if (gameState.achievements) {
+      const savedAchievementsMap = Object.fromEntries(
+        (gameState.achievements || []).map((a) => [a.id, a])
+      );
+
       achievements = defaultAchievements.map((ach) => {
-        const saved = gameState.achievements[ach.id];
+        const saved = savedAchievementsMap[ach.id];
         return {
           ...ach,
           unlocked: saved ? saved.unlocked : ach.unlocked,
         };
       });
-    }
 
+      for (let i = 0; i < achievements.length; i++) {
+        if (achievements[i].unlocked) {
+          addAchievementNote(achievements[i]);
+        }
+      }
+    }
 
     totalClicks = gameState.totalClicks || 0;
     totalNotes = gameState.totalNotes || 0;
+    unlockedAchievements = gameState.unlockedAchievements || 0;
     clickTimestamps = gameState.clickTimestamps || [];
     clickBonus = gameState.clickBonus || 1;
     upgrade1Bonus = gameState.upgrade1Bonus || 0;
@@ -704,6 +742,7 @@ function deleteSave() {
     upgrade1Bonus = 0;
     upgrade2Bonus = 0;
     totalRate = 0;
+    unlockedAchievements = 0;
     workers = { ...defaultWorkers };
     upgrades = { ...defaultUpgrades };
     achievements = [...defaultAchievements];
@@ -957,13 +996,28 @@ if (window.innerWidth <= 768) {
 ///////////////////////////
 ////ACHIEVEMENTS LOGIC////
 /////////////////////////
-
 function checkForAchievements() {
   if (totalNotes >= 1) {
     unlockAchievement("firstNote");
   }
   if (totalNotes >= 100) {
     unlockAchievement("hundredNotes");
+  }
+  if (Object.values(workers).some((worker) => worker.owned > 0)) {
+    unlockAchievement("firstWorker");
+  }
+  if (Object.values(upgrades).some((upgrade) => upgrade.owned > 0)) {
+    unlockAchievement("firstUpgrade");
+  }
+  if (mainContainer.style.transform === "translate(0px, -100vh)") {
+    unlockAchievement("settings");
+  }
+  if (
+    Object.values(workers).some(
+      (worker) => worker.owned > 0 && worker.id === "worker5"
+    )
+  ) {
+    unlockAchievement("crime");
   }
 }
 
@@ -1010,12 +1064,28 @@ function addAchievementNote(achievement) {
   const achievementSection = document.getElementById("achievements-section");
   const achievementNote = document.createElement("div");
   achievementNote.className = "stickynote achievements-note";
-  achievementNote.innerHTML = `
-  <strong>${achievement.name}</strong><br>
-  <small>${achievement.description}</small>
-`;
+  achievementNote.innerHTML = `<strong>${achievement.name}</strong><br><small>${achievement.description}</small>`;
+  achievementNote.dataset.position = achievement.position;
 
-  achievementSection.appendChild(achievementNote);
+  // Find existing notes
+  const existingNotes = Array.from(
+    achievementSection.getElementsByClassName("achievements-note")
+  );
+
+  // Find correct place to insert
+  let inserted = false;
+  for (let i = 0; i < existingNotes.length; i++) {
+    const notePosition = parseInt(existingNotes[i].dataset.position, 10);
+    if (achievement.position < notePosition) {
+      achievementSection.insertBefore(achievementNote, existingNotes[i]);
+      inserted = true;
+      break;
+    }
+  }
+
+  if (!inserted) {
+    achievementSection.appendChild(achievementNote);
+  }
 }
 
 function updateAchievementStats() {
