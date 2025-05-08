@@ -229,9 +229,9 @@ function createUpgradeElements() {
     upgradeEl.style.background = getRandomStickyNoteColor();
 
     if (upgrade.owned >= upgrade.max) {
-      upgradeEl.style.filter = `brightness(0.7)`
+      upgradeEl.style.filter = `brightness(0.7)`;
       upgradeEl.style.transition = `all 0.2s ease-in-out`;
-    };
+    }
 
     function upgradeAmountText() {
       if (upgrade.key === "upgrade1") {
@@ -286,9 +286,9 @@ function createUpgradeElements() {
         text.textContent = `${upgradeAmountText()}`;
         costText.textContent = `Cost: ${upgrade.cost.toFixed(0)}`;
         if (upgrade.owned >= upgrade.max) {
-          button.style.filter = `brightness(0.7)`
+          button.style.filter = `brightness(0.7)`;
           button.style.transition = `all 0.2s ease-in-out`;
-        };
+        }
         updateMoneyText();
       }
     });
@@ -503,11 +503,10 @@ function calculateMoneyPerSecond(initial) {
   }
 
   totalRate = moneyPerSec - initialMoneyPerSec;
-  updateRateDisplays(moneyPerSec);
-
   if (upgrades.upgrade5.owned > 0) {
     moneyPerSec *= upgrades.upgrade5.value;
   }
+  updateRateDisplays(moneyPerSec);
 
   return moneyPerSec;
 }
