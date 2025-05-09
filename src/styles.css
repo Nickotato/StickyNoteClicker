@@ -181,6 +181,21 @@ body {
   border: none;
 }
 
+.game-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none; /* Prevent interaction initially */
+  opacity: 0.4; /* Visually indicate inactive state */
+  transition: opacity 0.3s ease;
+}
+
+.game-note.centered .game-frame {
+  pointer-events: auto; /* Enable interaction when note is expanded */
+  opacity: 1; /* Full visibility */
+}
+
+
 /* END OF GAMES SECTION */
 
 /* SETTINGS SECTION */

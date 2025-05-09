@@ -773,36 +773,26 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function showCenteredGame(note, gameName) {
-  // Get the parent section
   const gamesSection = document.getElementById("games-section");
-  if (!gamesSection) return; // Safety check
+  if (!gamesSection) return;
 
-  // Check if overlay already exists in this section
   let overlay = gamesSection.querySelector(".game-overlay");
   if (!overlay) {
-    // Add dark overlay inside the games section
     overlay = document.createElement("div");
     overlay.classList.add("game-overlay");
-    // Make overlay position absolute relative to gamesSection
-    overlay.style.position = "absolute"; // Change from fixed
+    overlay.style.position = "absolute";
     overlay.style.top = "0";
     overlay.style.left = "0";
     overlay.style.width = "100%";
     overlay.style.height = "100%";
-    // z-index is now relative *within* gamesSection
-    overlay.style.zIndex = "5"; // Keep lower than centered note
-    gamesSection.appendChild(overlay); // Append here
+    overlay.style.zIndex = "5";
+    gamesSection.appendChild(overlay);
   }
-  overlay.style.display = "flex"; // Ensure it's visible
 
-  // Center the selected game note
-  note.classList.add("centered"); // This should have z-index: 1000 (or just higher than 5)
-
-  // Load the game after the animation
-  setTimeout(() => {
-    loadGame(note, gameName);
-  }, 500); // Wait for animation
+  overlay.style.display = "flex";
+  note.classList.add("centered");
 }
+
 
 function loadGame(note, gameName) {
   const gameContent = note.querySelector(".game-content");
@@ -838,33 +828,18 @@ const gameString = JSON.stringify(gameName);
 }
 
 function closeCenteredGame(e) {
-  // Find the overlay *within* the games section
   const gamesSection = document.getElementById("games-section");
-  const overlay = gamesSection
-    ? gamesSection.querySelector(".game-overlay")
-    : null;
-  // Find the centered note (could be anywhere if moved, but likely still in gamesSection)
+  const overlay = gamesSection?.querySelector(".game-overlay");
   const centeredNote = document.querySelector(".game-note.centered");
 
-  // Close if clicking the overlay specifically OR if clicking outside the centered note
-  // when both exist
   if (overlay && centeredNote) {
-    // If the click target is the overlay OR the click target is NOT the centered note
-    // AND is not a descendant of the centered note
     if (e.target === overlay || !centeredNote.contains(e.target)) {
-      overlay.style.display = "none"; // Hide overlay instead of removing maybe? Or remove.
-      // overlay.remove(); // Or remove it completely
-
+      overlay.style.display = "none";
       centeredNote.classList.remove("centered");
-      const gameContent = centeredNote.querySelector(".game-content");
-      // Clear the iframe or content if needed
-      const iframe = gameContent.querySelector("iframe");
-      if (iframe) iframe.remove();
-      // Add back the placeholder text if desired
-      // gameContent.innerHTML = `<p>${centeredNote.getAttribute('data-game')}</p>`;
     }
   }
 }
+
 
 ////////////////////
 ////AUDIO LOGIC////
