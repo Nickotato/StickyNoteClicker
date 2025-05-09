@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pong Game</title>
+    <style>
+      canvas {
+        display: block;
+        margin: 0 auto;
+        background: #000;
+      }
+      .start-screen {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-size: 36px;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="pong" width="250" height="250"></canvas>
+    <div id="start-screen" class="start-screen">Click to Start</div>
+
+    <script>
+      const canvas = document.getElementById("pong");
+      const context = canvas.getContext("2d");
+
+      const paddleWidth = 10,
+        paddleHeight = 100;
+      const ballSize = 10;
+
+      const player = {
+        x: 0,
+        y: canvas.height / 2 - paddleHeight / 2,
+        width: paddleWidth,
+        height: paddleHeight,
+        dy: 0,
+      };
+      const computer = {
+        x: canvas.width - paddleWidth,
+        y: canvas.height / 2 - paddleHeight / 2,
+        width: paddleWidth,
+        height: paddleHeight,
+      };
+      const ball = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        size: ballSize,
+        dx: 4,
+        dy: 4,
+      };
+
+      let gameStarted = false;
+
+      function drawRect(x, y, w, h, color) {
+        context.fillStyle = color;
+        context.fillRect(x, y, w, h);
+      }
+
+      function drawBall(x, y, size, color) {
+        context.fillStyle = color;
+        context.fillRect(x, y, size, size);
+      }
+
+      function movePaddle(paddle, dy) {
+        paddle.y += dy;
+        if (paddle.y < 0) paddle.y = 0;
+        if (paddle.y + paddle.height > canvas.height)
+          paddle.y = canvas.height - paddle.height;
+      }
+
+      function resetBall() {
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.dx = -ball.dx;
+        ball.dy = 4 * (Math.random() > 0.5 ? 1 : -1);
+      }
+
+      function update() {
+        movePaddle(player, player.dy);
+
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        // AI movement
+        let compCenter = computer.y + computer.height / 2;
+        if (compCenter < ball.y) computer.y += 3;
+        else if (compCenter > ball.y) computer.y -= 3;
+
+        if (ball.y <= 0 || ball.y + ball.size >= canvas.height) ball.dy *= -1;
+
+        if (
+          ball.x <= player.x + player.width &&
+          ball.y + ball.size >= player.y &&
+          ball.y <= player.y + player.height
+        ) {
+          ball.dx *= -1;
+        }
+
+        if (
+          ball.x + ball.size >= computer.x &&
+          ball.y + ball.size >= computer.y &&
+          ball.y <= computer.y + computer.height
+        ) {
+          ball.dx *= -1;
+        }
+
+        if (ball.x < 0 || ball.x > canvas.width) resetBall();
+      }
+
+      function draw() {
+        drawRect(0, 0, canvas.width, canvas.height, "#000"); // Clear
+        drawRect(player.x, player.y, player.width, player.height, "#fff");
+        drawRect(
+          computer.x,
+          computer.y,
+          computer.width,
+          computer.height,
+          "#fff"
+        );
+        drawBall(ball.x, ball.y, ball.size, "#fff");
+      }
+
+      function loop() {
+        if (gameStarted) {
+          update();
+          draw();
+        }
+        requestAnimationFrame(loop);
+      }
+
+      function startGame() {
+        gameStarted = true;
+        document.getElementById("start-screen").style.display = "none"; // Hide start screen
+        loop();
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") player.dy = -6;
+        if (e.key === "ArrowDown") player.dy = 6;
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") player.dy = 0;
+      });
+
+      document
+        .getElementById("start-screen")
+        .addEventListener("click", startGame);
+    </script>
+  </body>
+</html>

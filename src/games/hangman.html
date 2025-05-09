@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hangman: Human vs AI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: #f4f4f4;
+        padding: 50px;
+      }
+
+      .screen {
+        display: none;
+      }
+
+      .visible {
+        display: block;
+      }
+
+      .game-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        display: inline-block;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      #letter-input {
+        font-size: 20px;
+        width: 30px;
+        text-align: center;
+      }
+
+      #message {
+        font-size: 20px;
+        margin-top: 10px;
+        color: green;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen visible">
+      <div class="game-container">
+        <h1>Hangman: Human vs AI</h1>
+        <p>Try to guess the word before you run out of guesses!</p>
+        <button onclick="startGame()">Start Game</button>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="game-container">
+        <h1>Hangman: Human vs AI</h1>
+        <p id="word-display">_ _ _ _ _</p>
+        <p>Wrong guesses: <span id="wrong-guesses"></span></p>
+        <input type="text" id="letter-input" maxlength="1" autofocus />
+        <button onclick="guessLetter()">Guess</button>
+        <p id="message"></p>
+      </div>
+    </div>
+
+    <script>
+      const words = ["javascript", "hangman", "challenge", "openai", "browser"];
+      let selectedWord = "";
+      let guessedLetters = [];
+      let wrongGuesses = [];
+
+      const startScreen = document.getElementById("start-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const display = document.getElementById("word-display");
+      const wrongDisplay = document.getElementById("wrong-guesses");
+      const message = document.getElementById("message");
+
+      function startGame() {
+        selectedWord = words[Math.floor(Math.random() * words.length)];
+        guessedLetters = [];
+        wrongGuesses = [];
+
+        document.getElementById("letter-input").disabled = false;
+        document.getElementById("letter-input").value = "";
+        message.textContent = "";
+
+        updateDisplay();
+
+        startScreen.classList.remove("visible");
+        startScreen.classList.add("screen");
+        gameScreen.classList.remove("screen");
+        gameScreen.classList.add("visible");
+      }
+
+      function updateDisplay() {
+        const displayWord = selectedWord
+          .split("")
+          .map((letter) => (guessedLetters.includes(letter) ? letter : "_"))
+          .join(" ");
+        display.textContent = displayWord;
+        wrongDisplay.textContent = wrongGuesses.join(" ");
+
+        if (!displayWord.includes("_")) {
+          message.textContent = "🎉 You won!";
+          disableInput();
+        } else if (wrongGuesses.length >= 6) {
+          message.textContent = `💀 You lost! The word was "${selectedWord}".`;
+          disableInput();
+        }
+      }
+
+      function guessLetter() {
+        const input = document.getElementById("letter-input");
+        const letter = input.value.toLowerCase();
+
+        if (!letter || letter.length !== 1 || !/[a-z]/.test(letter)) {
+          alert("Enter a single letter.");
+          return;
+        }
+
+        if (guessedLetters.includes(letter) || wrongGuesses.includes(letter)) {
+          alert("Already guessed.");
+          input.value = "";
+          return;
+        }
+
+        if (selectedWord.includes(letter)) {
+          guessedLetters.push(letter);
+        } else {
+          wrongGuesses.push(letter);
+        }
+
+        input.value = "";
+        updateDisplay();
+      }
+
+      function disableInput() {
+        document.getElementById("letter-input").disabled = true;
+      }
+    </script>
+  </body>
+</html>

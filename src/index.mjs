@@ -692,6 +692,7 @@ function load() {
       );
       const now = Date.now();
       const secondsOffline = Math.floor((now - lastOnline) / 1000);
+      if (secondsOffline === 0) return;
       const moneyPerSecond = calculateMoneyPerSecond("initial");
       const offlineMultiplier =
         upgrades.upgrade4.owned * upgrades.upgrade4.value;
@@ -793,7 +794,6 @@ function showCenteredGame(note, gameName) {
   note.classList.add("centered");
 }
 
-
 function loadGame(note, gameName) {
   const gameContent = note.querySelector(".game-content");
 
@@ -812,7 +812,7 @@ function loadGame(note, gameName) {
 function getGameURL(gameName) {
   // Assumes game files are inside a 'games' folder
   // relative to index.html
-const gameString = JSON.stringify(gameName);
+  const gameString = JSON.stringify(gameName);
   switch (gameName) {
     case "game1":
       return "./games/snake.html"; // Path relative to index.html
@@ -839,7 +839,6 @@ function closeCenteredGame(e) {
     }
   }
 }
-
 
 ////////////////////
 ////AUDIO LOGIC////
@@ -1070,22 +1069,23 @@ function updateAchievementStats() {
   achievementNumber.textContent = `${unlockedAchievements} / ${totalAchievements}`;
 }
 
-
-
 ////////////////////////
 ////ADMIN FUNCTIONS////
 //////////////////////
 
 // Expose a secret function globally
-window.unlockSecret = function(code) {
+window.unlockSecret = function (code) {
   if (code === "money123") {
-    console.log("%cYou unlocked 9999999999999 notes!", "color: gold; font-size: 16px;");
-    money = 9999999999999
+    console.log(
+      "%cYou unlocked 9999999999999 notes!",
+      "color: gold; font-size: 16px;"
+    );
+    money = 9999999999999;
   } else if (code === "achievements") {
     achievements.forEach((ach) => {
       unlockAchievement(ach.id);
-    })
-  }else {
+    });
+  } else {
     console.log("Invalid code.");
   }
 };

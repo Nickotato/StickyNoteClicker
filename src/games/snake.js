@@ -7,6 +7,7 @@ const gameContainer = document.getElementById("game-container");
 const box = 10;
 const rows = canvas.height / box;
 const cols = canvas.width / box;
+console.log(rows, cols);
 
 let snake, direction, food, game;
 

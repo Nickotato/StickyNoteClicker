@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rock Paper Scissors</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+
+      .screen {
+        display: none;
+      }
+
+      #game-screen {
+        display: none;
+      }
+
+      button {
+        padding: 20px;
+        margin: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+      }
+
+      button:hover {
+        background-color: #e0e0e0;
+      }
+
+      #choices button {
+        font-size: 40px;
+      }
+
+      #result {
+        margin-top: 20px;
+        font-size: 24px;
+      }
+
+      #start-screen {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+      <h1>Rock Paper Scissors</h1>
+      <button id="start-btn">Start Game</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <h2>Choose your move:</h2>
+      <div id="choices">
+        <button class="choice-btn" data-choice="rock">🪨</button>
+        <button class="choice-btn" data-choice="paper">📄</button>
+        <button class="choice-btn" data-choice="scissors">✂️</button>
+      </div>
+      <div id="result"></div>
+    </div>
+
+    <script>
+      // Variables to access elements
+      const startScreen = document.getElementById("start-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const startBtn = document.getElementById("start-btn");
+      const choiceBtns = document.querySelectorAll(".choice-btn");
+      const resultDiv = document.getElementById("result");
+
+      // Game logic
+      const choices = ["rock", "paper", "scissors"];
+
+      function getAIChoice() {
+        return choices[Math.floor(Math.random() * 3)];
+      }
+
+      function determineWinner(playerChoice, aiChoice) {
+        if (playerChoice === aiChoice) {
+          return "It's a tie!";
+        }
+        if (
+          (playerChoice === "rock" && aiChoice === "scissors") ||
+          (playerChoice === "paper" && aiChoice === "rock") ||
+          (playerChoice === "scissors" && aiChoice === "paper")
+        ) {
+          return "You win!";
+        }
+        return "You lose!";
+      }
+
+      // Event listener for the start button
+      startBtn.addEventListener("click", () => {
+        startScreen.style.display = "none";
+        gameScreen.style.display = "block";
+      });
+
+      // Event listener for choice buttons
+      choiceBtns.forEach((button) => {
+        button.addEventListener("click", (e) => {
+          const playerChoice = e.target.getAttribute("data-choice");
+          const aiChoice = getAIChoice();
+          const result = determineWinner(playerChoice, aiChoice);
+
+          const aiChoiceEmoji =
+            aiChoice === "rock" ? "🪨" : aiChoice === "paper" ? "📄" : "✂️";
+          const playerChoiceEmoji =
+            playerChoice === "rock"
+              ? "🪨"
+              : playerChoice === "paper"
+              ? "📄"
+              : "✂️";
+
+          resultDiv.innerHTML = `You chose ${playerChoiceEmoji}.<br>The AI chose ${aiChoiceEmoji}.<br>${result}`;
+        });
+      });
+    </script>
+  </body>
+</html>
