@@ -1,8 +1,152 @@
 <!DOCTYPE html>
-<html>
-  <head> </head>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic-Tac-Toe vs AI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      #start-screen,
+      #game-container {
+        text-align: center;
+      }
+      #start-screen {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      #board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        gap: 5px;
+        margin: 20px auto;
+      }
+      .cell {
+        width: 100px;
+        height: 100px;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        border: 2px solid #333;
+        cursor: pointer;
+      }
+      #status {
+        font-size: 24px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
   <body>
-    <h1>My First Heading</h1>
-    <p>My first paragraph.</p>
+    <div id="start-screen">
+      <h1>Tic-Tac-Toe</h1>
+      <button id="start-btn">Start Game</button>
+      <button onclick="window.close()">Quit</button>
+    </div>
+
+    <div id="game-container" style="display: none">
+      <div id="board"></div>
+      <div id="status"></div>
+      <button onclick="location.reload()">Restart</button>
+    </div>
+
+    <script>
+      const startScreen = document.getElementById("start-screen");
+      const gameContainer = document.getElementById("game-container");
+      const board = document.getElementById("board");
+      const status = document.getElementById("status");
+      const cells = [];
+
+      let boardState = ["", "", "", "", "", "", "", "", ""];
+      let currentPlayer = "X"; // Human
+      let gameOver = false;
+
+      document.getElementById("start-btn").addEventListener("click", () => {
+        startScreen.style.display = "none";
+        gameContainer.style.display = "block";
+        initBoard();
+      });
+
+      function initBoard() {
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.index = i;
+          cell.addEventListener("click", onCellClick);
+          board.appendChild(cell);
+          cells.push(cell);
+        }
+      }
+
+      function onCellClick(e) {
+        const index = e.target.dataset.index;
+
+        if (boardState[index] !== "" || gameOver) return;
+
+        makeMove(index, "X");
+
+        if (!gameOver) {
+          setTimeout(aiMove, 500);
+        }
+      }
+
+      function makeMove(index, player) {
+        boardState[index] = player;
+        cells[index].textContent = player;
+        cells[index].style.pointerEvents = "none";
+
+        if (checkWinner(player)) {
+          status.textContent = player + " wins!";
+          gameOver = true;
+        } else if (boardState.every((cell) => cell !== "")) {
+          status.textContent = "It's a draw!";
+          gameOver = true;
+        }
+      }
+
+      function aiMove() {
+        let bestMove = getBestMove();
+        makeMove(bestMove, "O");
+      }
+
+      function getBestMove() {
+        for (let i = 0; i < 9; i++) {
+          if (boardState[i] === "") {
+            return i;
+          }
+        }
+      }
+
+      function checkWinner(player) {
+        const wins = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8], // rows
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8], // cols
+          [0, 4, 8],
+          [2, 4, 6], // diags
+        ];
+
+        return wins.some((combo) =>
+          combo.every((index) => boardState[index] === player)
+        );
+      }
+    </script>
   </body>
 </html>

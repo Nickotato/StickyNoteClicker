@@ -1,8 +1,53 @@
 <!DOCTYPE html>
-<html>
-  <head> </head>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Snake Game</title>
+    <style>
+      body {
+        /* background: #111; */ /* Remove or comment this */
+        margin-top: 50px;
+        color: #fff;
+        text-align: center;
+        font-family: sans-serif;
+      }
+
+      #game-container {
+        display: none;
+      }
+
+      canvas {
+        background: transparent;
+        border: none;
+        display: block;
+        margin-top: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background: #0f0;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background: #0c0;
+      }
+    </style>
+  </head>
   <body>
-    <h1>My First Heading</h1>
-    <p>My first paragraph.</p>
+    <div id="menu">
+      <h1>Snake Game</h1>
+      <button id="startBtn">Start Game</button>
+    </div>
+
+    <div id="game-container">
+      <canvas id="game" width="100" height="100"></canvas>
+    </div>
+
+    <script src="snake.js"></script>
   </body>
 </html>

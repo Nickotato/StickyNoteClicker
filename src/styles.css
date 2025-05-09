@@ -111,7 +111,7 @@ body {
 }
 
 .game-note .game-content {
-  opacity: 0;
+  /* opacity: 0; */
   transition: opacity 0.5s ease;
 }
 
@@ -186,7 +186,7 @@ body {
   height: 100%;
   border: none;
   pointer-events: none; /* Prevent interaction initially */
-  opacity: 0.4; /* Visually indicate inactive state */
+  /* opacity: 0.4;  */
   transition: opacity 0.3s ease;
 }
 
@@ -194,7 +194,6 @@ body {
   pointer-events: auto; /* Enable interaction when note is expanded */
   opacity: 1; /* Full visibility */
 }
-
 
 /* END OF GAMES SECTION */
 
@@ -354,7 +353,6 @@ input[type="range"]::-moz-range-thumb:hover {
 .achievements-note:hover {
   transform: scale(1.05) rotate(-1deg);
 }
-
 
 /* END OF ACHIEVEMENTS SECTION */
 .nav-notes {
@@ -580,10 +578,9 @@ input[type="range"]::-moz-range-thumb:hover {
 .no-select {
   user-select: none;
   -webkit-user-select: none; /* Safari */
-  -moz-user-select: none;    /* Firefox */
-  -ms-user-select: none;     /* Internet Explorer/Edge */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
 }
-
 
 @keyframes fall {
   0% {
