@@ -168,23 +168,23 @@
         </section> -->
         <div class="casino-controls">
           <p id="current-money-display">Current Money: $100</p>
-
         
-          <label for="bet-amount">Bet Amount: $</label>
-          <input type="number" id="bet-amount" value="10" min="1" />
+          <label for="bet-amount-slider">Bet Amount: $<span id="bet-amount-display">10</span></label>
+          <input type="range" id="bet-amount-slider" value="10" min="1" max="100" />
+          <input type="number" id="bet-amount-input" value="10" min="1" />
         
-          <label for="game-select">Choose a game:</label>
-          <select id="game-select">
-            <option value="blackjack">Blackjack</option>
-            <option value="ride-the-bus">Ride the Bus</option>
-            <option value="roulette">Roulette</option>
-            <option value="slots">Slot Machine</option>
-          </select>
+          <div class="game-selection">
+            <button class="casino-game-note" data-game="blackjack" style="rotate: 2deg;">Blackjack</button>
+            <button class="casino-game-note" data-game="ride-the-bus" style="rotate: -2deg;">Ride the Bus</button>
+            <button class="casino-game-note" data-game="roulette" style="rotate: 3deg;">Roulette</button>
+            <button class="casino-game-note" data-game="slots" style="rotate: -3deg;">Slot Machine</button>
+          </div>
         
           <button id="play-game">Play Game</button>
         
           <div id="game-result" style="margin-top: 1rem;"></div>
         </div>
+        
         
       </section>
 

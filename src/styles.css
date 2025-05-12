@@ -554,19 +554,32 @@ input[type="range"]::-moz-range-thumb:hover {
   left: -100vw;
   top: 0px;
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-  color: #fff;
+  background: #fef9e7; /* Light paper tone */
+  color: #333;
   text-align: center;
   padding: 2rem;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  border: 4px solid #fdd835; /* Sticky note border */
   box-sizing: border-box;
 }
 
 #casino-section h1 {
-  font-size: 3rem;
+  /* font-size: 3rem;
   margin-bottom: 2rem;
   color: gold;
-  text-shadow: 0 0 5px #f0f, 0 0 10px red;
+  text-shadow: 0 0 5px #f0f, 0 0 10px red; */
+
+  display: inline-block;
+  background: #fff176;
+  color: #5d4037;
+  padding: 1rem 2rem;
+  font-size: 2.5rem;
+  transform: rotate(-3deg);
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+  border: 2px solid #fbc02d;
+  border-radius: 12px;
+  margin-bottom: 2rem;
 }
 
 .slot-machine {
@@ -659,12 +672,31 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .casino-controls {
-  margin: 2rem auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
   font-size: 1.2rem;
+}
+
+
+.casino-controls label {
+  background: #ffecb3;
+  padding: 0.5rem 1rem;
+  border: 2px solid #fbc02d;
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  transform: rotate(-2deg);
+}
+
+.casino-controls input, 
+.casino-controls select {
+  background: #fffde7;
+  border: 2px solid #fdd835;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
 }
 
 .casino-controls input, .casino-controls select, .casino-controls button {
@@ -674,16 +706,45 @@ input[type="range"]::-moz-range-thumb:hover {
   border: none;
 }
 
-#casino-game-section {
-  left: -100vw;
-  top: -100vh;
+
+/* Play Button like a sticky note */
+#play-game {
+  background: #aed581;
+  color: #2e7d32;
+  border: 2px solid #81c784;
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  transform: rotate(1deg);
+  transition: background 0.3s ease, transform 0.2s;
 }
 
-.blackjack-game {
-  text-align: center;
-  padding: 2rem;
-  color: #fff;
+#play-game:hover {
+  background: #9ccc65;
+  transform: rotate(0deg) scale(1.05);
 }
+
+/* Money Display sticky note style */
+#current-money-display {
+  background: #ffe082;
+  padding: 0.5rem 1rem;
+  border: 2px solid #fbc02d;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  transform: rotate(2deg);
+}
+
+/* #game-result {
+  background: #ffccbc;
+  padding: 0.5rem 1rem;
+  border: 2px solid #ff8a65;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  transform: rotate(-1deg);
+  font-weight: bold;
+} */
 
 .blackjack-hand {
   margin-bottom: 1rem;
@@ -708,25 +769,112 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 
+
+
 /* General Styles for the casino game section */
 #casino-game-section {
+  left: -100vw;
+  top: -100vh;
   padding: 20px;
   box-sizing: border-box;
   border-radius: 10px;
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Blackjack Theme */
+/* Blackjack Table Theme */
 .blackjack-theme {
-  background-color: #2a2a2a;
-  color: white;
-  font-family: 'Courier New', monospace;
-  border: 2px solid #4caf50;
+  background: radial-gradient(circle at center, #35654d 0%, #1e3c2f 100%);
+  border: 5px solid #2ecc71;
+  border-radius: 20px;
+  padding: 20px 40px;
+  text-align: center;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
 }
 
-.blackjack-theme h2 {
-  color: #4caf50;
+/* Table Edge (semi-circle effect) */
+.blackjack-theme::before {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(to bottom, #222, #000);
+  border-top-left-radius: 100% 50px;
+  border-top-right-radius: 100% 50px;
+  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.5);
 }
+
+/* Cards Styling */
+.blackjack-hand .cards img.card {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.blackjack-hand .cards img.card:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+
+/* Dealer's hidden card */
+.card.back {
+  filter: brightness(0.3) saturate(0.5);
+}
+
+/* Buttons Styling */
+.blackjack-controls {
+  background: linear-gradient(to bottom, #4caf50, #2e7d32);
+  color: #fff;
+  border: 2px solid #1b5e20;
+  border-radius: 12px;
+  padding: 12px 24px;
+  margin: 0 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.blackjack-controls:hover {
+  background: linear-gradient(to bottom, #66bb6a, #388e3c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Headings and Text */
+.blackjack-theme h2 {
+  font-family: 'Georgia', serif;
+  font-size: 2.5rem;
+  color: gold;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.7);
+}
+
+.blackjack-theme h3 {
+  font-family: 'Verdana', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  margin-top: 1rem;
+}
+
+/* Chips or Bet Display (optional enhancement) */
+.blackjack-theme .chip-display {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 1.2rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 2px solid #2ecc71;
+}
+
 
 /* Roulette Theme */
 .roulette-theme {
@@ -762,6 +910,45 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .ride-the-bus-theme h2 {
   color: #009688;
+}
+
+
+.game-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.casino-game-note {
+  background: #ffecb3;
+  padding: 1rem 2rem;
+  border: 2px solid #fbc02d;
+  border-radius: 12px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.casino-game-note:hover {
+  background: #fff176;
+  transform: scale(1.05);
+}
+
+.casino-game-note.active {
+  background: #aed581;
+  border-color: #81c784;
+}
+
+#bet-amount-slider {
+  width: 80%;
+}
+
+#bet-amount-input {
+  width: 80px;
+  margin-left: 1rem;
 }
 
 
