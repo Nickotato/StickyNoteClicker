@@ -1,3 +1,14 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if the user has already acknowledged the beta status
+  const hasSeenBetaAlert = localStorage.getItem('hasSeenBetaAlert');
+
+  if (!hasSeenBetaAlert) {
+    alert('🚧 This website is currently in beta. Features may change or break unexpectedly.');
+    localStorage.setItem('hasSeenBetaAlert', 'true');
+  }
+});
+
+
 import "./styles.css";
 import {
   bgMusic,
@@ -11,10 +22,12 @@ import {
   soundEffects,
   playSoundEffects,
 } from "./audio.mjs";
+import {readableNumber, getTotalCost, getCardSrc} from "./utils.mjs"
 
 import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
 import { defaultAchievements } from "./achievements.mjs";
+
 
 let workers = {};
 for (const key in defaultWorkers) {
@@ -71,6 +84,8 @@ screenChangeButtons.forEach((button) => {
       mainContainer.style.transform = `translate(0, 0)`;
     } else if (noSpacesString === "Achievements") {
       mainContainer.style.transform = `translate(-100%, -100vh)`;
+    } else if (noSpacesString === "Casino") {
+      mainContainer.style.transform = `translate(100%, 0)`;
     }
   });
 });
@@ -115,6 +130,22 @@ upgradeContent.className = "shop-content";
 upgradeContent.id = "upgrade-content";
 shopSection.appendChild(upgradeContent);
 
+const bulkBuySection = document.createElement("div");
+bulkBuySection.className="bulkBuySection";
+const [bulk1, bulk10, bulk100] = ["div", "div", "div"].map(tag => document.createElement(tag));
+
+bulk1.className = "shop-tab bulkBuyButton active";
+bulk10.className = "shop-tab bulkBuyButton";
+bulk100.className = "shop-tab bulkBuyButton";
+bulk1.textContent = "1";
+bulk10.textContent = "10";
+bulk100.textContent = "100";
+[bulk1, bulk10, bulk100].forEach(el => bulkBuySection.appendChild(el));
+shopSection.appendChild(bulkBuySection);
+
+
+
+
 let money = 0;
 let totalClicks = 0;
 let totalNotes = 0;
@@ -128,6 +159,10 @@ let upgrade2Bonus = 0;
 let totalRate = 0;
 let unlockedAchievements = 0;
 let totalAchievements = achievements.length;
+
+let planeMultiplier = 0;
+let isReadableNumbersOn = false;
+let buyAmount = 1;
 
 document.addEventListener(
   "click",
@@ -178,7 +213,7 @@ function createWorkerElements() {
         <button class="shop-item-button">${worker.name}</button>
         <p class="shop-item-description">${worker.description}</p>
         <p class="shop-item-owned">You own ${worker.owned}</p>
-        <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
+        <p class="shop-item-cost">Cost: ${getTotalCost(worker.cost, 1.15, buyAmount).toFixed(0)}</p>
         <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
       `;
     }
@@ -193,14 +228,17 @@ function createWorkerElements() {
 
       if (worker.listenerAttached) return;
       button.addEventListener("click", () => {
-        if (money >= worker.cost) {
+        const totalCost = getTotalCost(worker.cost, 1.15, buyAmount);
+      
+        if (money >= totalCost) {
           playSoundEffects(soundEffects.orb);
-          button.disabled = true; // disable immediately
-          setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
-
-          money -= worker.cost;
-          worker.owned++;
-          worker.cost *= 1.15;
+          button.disabled = true;
+          setTimeout(() => (button.disabled = false), 500);
+      
+          money -= totalCost;
+          worker.owned += buyAmount;
+          worker.cost *= Math.pow(1.15, buyAmount); // Apply exponential cost growth
+      
           ownedText.textContent = `You own ${worker.owned}`;
           costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
           updateMoneyText();
@@ -208,7 +246,7 @@ function createWorkerElements() {
         } else {
           playSoundEffects(soundEffects.hover);
         }
-      });
+      });;
       worker.listenerAttached = true;
     }
   });
@@ -218,7 +256,7 @@ function createUpgradeElements() {
   upgradeContent.innerHTML = "";
   Object.values(upgrades).forEach((upgrade) => {
     const upgradeEl = document.createElement("div");
-    upgradeEl.className = "shop-item stickynote no-select";
+    upgradeEl.className = `shop-item stickynote no-select upgrades-note ${upgrade}`;
 
     const angle = Math.random() * 10 - 5;
     let transform = `rotate(${angle}deg)`;
@@ -228,10 +266,19 @@ function createUpgradeElements() {
     upgradeEl.style.margin = "10px";
     upgradeEl.style.background = getRandomStickyNoteColor();
 
-    if (upgrade.owned >= upgrade.max) {
+    if (upgrade.owned + buyAmount > upgrade.max) {
       upgradeEl.style.filter = `brightness(0.7)`;
       upgradeEl.style.transition = `all 0.2s ease-in-out`;
     }
+
+    upgradeEl.addEventListener("mouseenter", () => {
+      upgradeEl.style.transform = "rotate(0deg)";
+    });
+
+    upgradeEl.addEventListener("mouseleave", () => {
+      upgradeEl.style.transform = transform;
+    });
+
 
     function upgradeAmountText() {
       if (upgrade.key === "upgrade1") {
@@ -254,13 +301,17 @@ function createUpgradeElements() {
         )}% of notes earned offline`;
       } else if (upgrade.key === "upgrade5") {
         return upgrade.owned === 1 ? `You own this` : `You do not own this`;
+      } else if (upgrade.key === "upgrade6") {
+        return upgrade.owned === 1 ? `You have access` : `Access Denied`;
+      }  else if (upgrade.key === "upgrade7") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
       }
     }
 
     upgradeEl.innerHTML = `
       <button class="shop-item-button">${upgrade.id}</button>
       <p class="shop-item-description">${upgrade.description}</p>
-      <p class="shop-item-cost">Cost: ${upgrade.cost.toFixed(0)}</p>
+      <p class="shop-item-cost">Cost: ${isReadableNumbersOn ? readableNumber(upgrade.cost) : upgrade.cost.toFixed(0)}</p>
       <p class="shop-item-text">${upgradeAmountText()}</p>
     `;
 
@@ -271,7 +322,10 @@ function createUpgradeElements() {
     const costText = upgradeEl.querySelector(".shop-item-cost");
 
     button.addEventListener("click", () => {
-      if (money >= upgrade.cost) {
+      const totalCost = getTotalCost(upgrade.cost, findUpgradeCost(upgrade.key), buyAmount);
+
+      
+      if (money >= totalCost && upgrade.owned + buyAmount <= upgrade.max) {
         if (upgrade.key === "upgrade4" && upgrade.owned >= upgrade.max) {
           alert("cannot go above 100%");
           return;
@@ -279,28 +333,38 @@ function createUpgradeElements() {
           alert("Cannot buy more than 1");
           return;
         }
-        money -= upgrade.cost;
+
+        money -= totalCost;
         playSoundEffects(soundEffects.orb);
-        upgrade.owned++;
-        upgrade.cost *= findUpgradeCost(upgrade.key);
+
+        upgrade.owned += buyAmount;
+        upgrade.cost *= Math.pow(findUpgradeCost(upgrade.key), buyAmount);
+
         text.textContent = `${upgradeAmountText()}`;
-        costText.textContent = `Cost: ${upgrade.cost.toFixed(0)}`;
-        if (upgrade.owned >= upgrade.max) {
+        costText.textContent = `Cost: ${isReadableNumbersOn ? readableNumber(upgrade.cost) : upgrade.cost.toFixed(0)} (${buyAmount}x)`;
+
+        if (upgrade.owned + buyAmount > upgrade.max) {
           button.style.filter = `brightness(0.7)`;
           button.style.transition = `all 0.2s ease-in-out`;
         }
+
         updateMoneyText();
+      } else {
+        playSoundEffects(soundEffects.hover);
       }
     });
   });
 }
 
+
 function findUpgradeCost(key) {
   if (key === "upgrade1") return 3;
   else if (key === "upgrade2") return 10;
-  else if (key === "upgrade3") return 5;
+  else if (key === "upgrade3") return 2.5;
   else if (key === "upgrade4") return 5;
   else if (key === "upgrade5") return 1;
+  else if (key === "upgrade6") return 1;
+  else if (key === "upgrade7") return 1;
 }
 
 workerTab.addEventListener("click", () => {
@@ -359,6 +423,18 @@ function toggleShopSection(tab, othertab) {
   }
 }
 
+bulkBuySection.addEventListener("click", (e) => {
+  const target = e.target;
+  if (target.classList.contains("bulkBuyButton")) {
+    buyAmount = parseInt(target.textContent);
+
+    // Remove 'active' from all buttons, then add to clicked one
+    const allButtons = bulkBuySection.querySelectorAll(".bulkBuyButton");
+    allButtons.forEach(btn => btn.classList.remove("active"));
+    target.classList.add("active");
+  }
+});
+
 function initGame() {
   if (localStorage.getItem("stickyNotesGame") != null) load();
   createWorkerElements();
@@ -367,10 +443,6 @@ function initGame() {
   updateMoneyPerSecondText();
   updateRateDisplays();
   updateAchievementStats();
-  // achievements.forEach((ach) => {
-  //   console.log(ach);
-  //   if (ach.unlocked) addAchievementNote(ach.id);
-  // });
 
   document.getElementById("delete-save").addEventListener("click", deleteSave);
 }
@@ -407,26 +479,30 @@ mainButton.addEventListener("click", (event) => {
   if (!isClicking) {
     isClicking = true;
     const rateDisplays = document.getElementById("rate-displays");
-
+  
     if (upgrades.upgrade1.owned > 0 || upgrades.upgrade2.owned > 0) {
-      // Remove class in case it was already applied
-      rateDisplays.classList.remove("visible");
-
-      // Trigger reflow (forces browser to recognize the start state)
-      void rateDisplays.offsetWidth;
-
-      // Add class on next animation frame
-      requestAnimationFrame(() => {
-        rateDisplays.classList.add("visible");
-      });
+      // Start hidden and off-screen
+      rateDisplays.style.opacity = '0';
+  
+  
+      rateDisplays.style.opacity = '1';
+      // Slide in
+      setTimeout(() => {
+        rateDisplays.style.left = '20px'; // animate to visible position
+      }, 100);
     }
   }
-
+  
   if (clickCooldownTimeout) clearTimeout(clickCooldownTimeout);
   clickCooldownTimeout = setTimeout(() => {
     isClicking = false;
-    document.getElementById("rate-displays").classList.remove("visible");
+    const rateDisplays = document.getElementById("rate-displays");
+  
+    // Slide back out
+    rateDisplays.style.opacity = '0';
+    rateDisplays.style.left = '-300px';
   }, 500);
+  ;
 });
 
 // 👇 Utility Functions
@@ -453,12 +529,14 @@ function spawnFloatingNumber(x, y, amount) {
 }
 
 function updateMoneyText() {
-  moneyText.textContent = `You have ${money.toFixed(0)} sticky notes`;
+  if (isReadableNumbersOn) moneyText.textContent = `You have ${readableNumber(money)} sticky notes`;
+   else moneyText.textContent = `You have ${money.toFixed(0)} sticky notes`;
 }
 
 function updateMoneyPerSecondText() {
   const NPS = calculateMoneyPerSecond();
-  perSec.textContent = `${NPS.toFixed(0)} notes per second`;
+  if (isReadableNumbersOn) perSec.textContent = `${readableNumber(NPS)} notes per second`;
+  else perSec.textContent = `${NPS.toFixed(0)} notes per second`;
 }
 
 function calculateMoneyPerSecond(initial) {
@@ -467,7 +545,24 @@ function calculateMoneyPerSecond(initial) {
 
   let workerIncome = 0;
   Object.values(workers).forEach((worker) => {
-    workerIncome += worker.produce * worker.owned;
+    let baseIncome = worker.produce * worker.owned;
+  
+    // Upgrade 7: Bonus every 5 owned
+    if (upgrades.upgrade7.owned > 0 && worker.owned >= 5) {
+      const multiplesOfFive = Math.floor(worker.owned / 5);
+      const bonusUnits = multiplesOfFive * 5;
+      const normalUnits = worker.owned - bonusUnits;
+    
+      const bonusIncome = bonusUnits * worker.produce * (1 + upgrades.upgrade7.value);
+      const normalIncome = normalUnits * worker.produce;
+    
+      baseIncome = bonusIncome + normalIncome;
+    } else {
+      baseIncome = worker.owned * worker.produce;
+    }
+    
+  
+    workerIncome += baseIncome;
   });
 
   moneyPerSec += workerIncome;
@@ -505,6 +600,9 @@ function calculateMoneyPerSecond(initial) {
   totalRate = moneyPerSec - initialMoneyPerSec;
   if (upgrades.upgrade5.owned > 0) {
     moneyPerSec *= upgrades.upgrade5.value;
+  }
+  if ( planeMultiplier > 0 ) {
+    moneyPerSec += planeMultiplier * initialMoneyPerSec;
   }
   updateRateDisplays(moneyPerSec);
 
@@ -545,7 +643,6 @@ function updateWorkerDescriptions() {
 
   workerItems.forEach((workerEl, index) => {
     const worker = Object.values(workers)[index];
-    // console.log(worker.cost);
     if (!worker.visible && money >= worker.cost * 0.9) {
       worker.visible = true;
     }
@@ -557,9 +654,13 @@ function updateWorkerDescriptions() {
         <button class="shop-item-button">${worker.name}</button>
         <p class="shop-item-description">${worker.description}</p>
         <p class="shop-item-owned">You own ${worker.owned}</p>
-        <p class="shop-item-cost">Cost: ${worker.cost.toFixed(0)}</p>
-        <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
+        <p class="shop-item-cost">Cost: ${isReadableNumbersOn ? (readableNumber(getTotalCost(worker.cost, 1.15, buyAmount))) : getTotalCost(worker.cost, 1.15, buyAmount).toFixed(0)}</p>
+        <p class="shop-item-produce">Produces: ${isReadableNumbersOn ? (readableNumber(worker.produce)) : worker.produce.toFixed(0)}/s</p>
       `;
+
+      if (money < getTotalCost(worker.cost, 1.15, buyAmount)) {
+        workerEl.style.filter = "brightness(0.5)";
+      } else workerEl.style.filter = "";
 
       // Reattach click handler
       const button = workerEl;
@@ -569,22 +670,25 @@ function updateWorkerDescriptions() {
       if (worker.listenerAttached) return;
 
       button.addEventListener("click", () => {
-        if (money >= worker.cost) {
+        const totalCost = getTotalCost(worker.cost, 1.15, buyAmount);
+      
+        if (money >= totalCost) {
           playSoundEffects(soundEffects.orb);
-          button.disabled = true; // disable immediately
-          setTimeout(() => (button.disabled = false), 500); // re-enable after 200ms
-
-          money -= worker.cost;
-          worker.owned++;
-          worker.cost *= 1.15;
-          ownedText.textContent = `You own ${worker.owned}`;
+          button.disabled = true;
+          setTimeout(() => (button.disabled = false), 500);
+      
+          money -= totalCost;
+          worker.owned += buyAmount;
+          worker.cost *= Math.pow(1.15, buyAmount); // Apply exponential cost growth
+      
+          ownedText.textContent = `You own ${worker.owned.toFixed(0)}`;
           costText.textContent = `Cost: ${worker.cost.toFixed(0)}`;
           updateMoneyText();
           updateMoneyPerSecondText();
         } else {
           playSoundEffects(soundEffects.hover);
         }
-      });
+      });;
 
       worker.listenerAttached = true; // ✅ Prevent duplicate listeners
     } else {
@@ -596,6 +700,53 @@ function updateWorkerDescriptions() {
       lock.style.padding = "20px";
     }
   });
+}
+
+function updateUpgradesDescription() {
+  const upgradeItems = document.querySelectorAll(".upgrades-note");
+  upgradeItems.forEach((upgradeEl, index) => {
+    const upgrade = Object.values(upgrades)[index];
+
+    if (money < getTotalCost(upgrade.cost, findUpgradeCost(upgrade.key), buyAmount) || upgrade.owned + buyAmount > upgrade.max) {
+      upgradeEl.style.filter = "brightness(0.5)";
+    } else upgradeEl.style.filter = "";
+
+    function upgradeAmountText() {
+      if (upgrade.key === "upgrade1") {
+        return `extra ${(
+          upgrades.upgrade1.owned *
+          upgrades.upgrade1.value *
+          100
+        ).toFixed(0)}% of NPS`;
+      } else if (upgrade.key === "upgrade2") {
+        return `${(
+          upgrades.upgrade2.value *
+          upgrades.upgrade2.owned *
+          100
+        ).toFixed(1)}% of cps multiplied by NPS`;
+      } else if (upgrade.key === "upgrade3") {
+        return `You get ${upgrade.value ** upgrade.owned} per click`;
+      } else if (upgrade.key === "upgrade4") {
+        return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
+          0
+        )}% of notes earned offline`;
+      } else if (upgrade.key === "upgrade5") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
+      } else if (upgrade.key === "upgrade6") {
+        return upgrade.owned === 1 ? `You have access` : `Access Denied`;
+      }  else if (upgrade.key === "upgrade7") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
+      }
+    }
+
+    upgradeEl.innerHTML = `
+      <button class="shop-item-button">${upgrade.id}</button>
+      <p class="shop-item-description">${upgrade.description}</p>
+      <p class="shop-item-cost">Cost: ${isReadableNumbersOn ? readableNumber(getTotalCost(upgrade.cost, findUpgradeCost(upgrade.key), buyAmount)) : getTotalCost(upgrade.cost, findUpgradeCost(upgrade.key), buyAmount).toFixed(0)}</p>
+      <p class="shop-item-text">${upgradeAmountText()}</p>
+    `;
+  }
+  )
 }
 
 function save() {
@@ -613,6 +764,7 @@ function save() {
       totalRate,
       achievements,
       unlockedAchievements,
+      isReadableNumbersOn,
     };
     localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
     localStorage.setItem("lastOnline", Date.now());
@@ -648,10 +800,16 @@ function load() {
     if (gameState.upgrades) {
       Object.keys(defaultUpgrades).forEach((key) => {
         if (gameState.upgrades[key]) {
+          const owned = gameState.upgrades[key].owned || 0;
+          const baseCost = defaultUpgrades[key].cost;
+          const newCost = Math.floor(
+            baseCost * Math.pow(findUpgradeCost(key), owned)
+          );
+
           upgrades[key] = {
             ...defaultUpgrades[key],
-            owned: gameState.upgrades[key].owned,
-            cost: gameState.upgrades[key].cost,
+            owned: owned,
+            cost: newCost,
           };
         }
       });
@@ -685,6 +843,7 @@ function load() {
     upgrade1Bonus = gameState.upgrade1Bonus || 0;
     upgrade2Bonus = gameState.upgrade2Bonus || 0;
     totalRate = gameState.totalRate || 0;
+    isReadableNumbersOn = gameState.isReadableNumbersOn || false;
 
     if (upgrades.upgrade4.owned > 0) {
       const lastOnline = parseInt(
@@ -692,7 +851,7 @@ function load() {
       );
       const now = Date.now();
       const secondsOffline = Math.floor((now - lastOnline) / 1000);
-      if (secondsOffline === 0) return;
+      if (secondsOffline <= 60) return;
       const moneyPerSecond = calculateMoneyPerSecond("initial");
       const offlineMultiplier =
         upgrades.upgrade4.owned * upgrades.upgrade4.value;
@@ -714,8 +873,18 @@ function update() {
   updateMoneyPerSecondText();
   updateMoneyText();
   updateWorkerDescriptions();
+  updateUpgradesDescription();
 
   checkForAchievements();
+  updateCasinoMoneyDisplay();
+
+  if (upgrades.upgrade6.owned > 0) {
+    const casinoButton = document.getElementById("casino-screen-note");
+  
+    if (casinoButton && casinoButton.style.display === "none") {
+      casinoButton.style.display = "block"; // or "inline-block", depending on your layout
+    }
+  }
 
   save();
 }
@@ -792,38 +961,11 @@ function showCenteredGame(note, gameName) {
 
   overlay.style.display = "flex";
   note.classList.add("centered");
-}
 
-function loadGame(note, gameName) {
-  const gameContent = note.querySelector(".game-content");
-
-  // Only load game if it's not already loaded
-  if (gameContent.querySelector("iframe")) return;
-
-  const gameIframe = document.createElement("iframe");
-  gameIframe.src = getGameURL(gameName);
-  gameIframe.style.width = "100%";
-  gameIframe.style.height = "100%";
-  gameIframe.style.border = "none";
-  console.log(gameIframe);
-  gameContent.appendChild(gameIframe);
-}
-
-function getGameURL(gameName) {
-  // Assumes game files are inside a 'games' folder
-  // relative to index.html
-  const gameString = JSON.stringify(gameName);
-  switch (gameName) {
-    case "game1":
-      return "./games/snake.html"; // Path relative to index.html
-    case "game2":
-      return "./games/tictactoe.html";
-    default:
-      // Optional: handle unknown game names
-      console.warn("Attempted to load unknown game:", gameName);
-      // You could return a path to a placeholder/error page
-      // return "games/unknown-game.html";
-      return ""; // Or return an empty string
+  // 🔁 Scale up iframe when centered
+  const iframe = note.querySelector("iframe");
+  if (iframe) {
+    iframe.style.transform = "scale(1)";
   }
 }
 
@@ -836,6 +978,12 @@ function closeCenteredGame(e) {
     if (e.target === overlay || !centeredNote.contains(e.target)) {
       overlay.style.display = "none";
       centeredNote.classList.remove("centered");
+
+      // 🔁 Scale iframe back down
+      const iframe = centeredNote.querySelector("iframe");
+      if (iframe) {
+        iframe.style.transform = "scale(0.70)";
+      }
     }
   }
 }
@@ -1077,15 +1225,424 @@ function updateAchievementStats() {
 window.unlockSecret = function (code) {
   if (code === "money123") {
     console.log(
-      "%cYou unlocked 9999999999999 notes!",
+      "%cYou unlocked 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 notes!",
       "color: gold; font-size: 16px;"
     );
-    money = 9999999999999;
+    money = 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999;
   } else if (code === "achievements") {
     achievements.forEach((ach) => {
       unlockAchievement(ach.id);
     });
+  } else if (code === "resetBigness") {
+    upgrades.upgrade3.owned = 0;
+  } else if (code === "spawnPlane") {
+    spawnAirplane();
   } else {
     console.log("Invalid code.");
   }
 };
+
+window.addEventListener("message", function (event) {
+  // Optional: check origin
+  // if (event.origin !== "https://trusted-origin.com") return;
+
+  if (event.data && event.data.type === "scoreUpdate") {
+    const score = event.data.score;
+    console.log(score);
+  }
+});
+
+///////////////////////////
+////AIRPLANE FUNCTIONS////
+/////////////////////////
+
+let multiplierEndTime = 0;  // The time when the multiplier will end
+let countdownInterval = null; // Timer for the countdown
+let countdownDisplay = null; // Element for the countdown timer
+let paper = null; // The paper element to hold the timer
+
+function createCountdownExtraStyles() {
+  // Check if elements already exist to avoid creating them multiple times
+  if (countdownDisplay && !paper) {
+    // Creating a clip at the top of the clipboard
+    let clip = document.createElement('div');
+    clip.style.position = 'absolute';
+    clip.style.top = '-10px';
+    clip.style.left = '50%';
+    clip.style.transform = 'translateX(-50%)';
+    clip.style.width = '60px';
+    clip.style.height = '15px';
+    clip.style.backgroundColor = '#999';
+    clip.style.borderRadius = '8px';
+    clip.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+    clip.style.zIndex = '1041';
+
+    paper = document.createElement('div');
+    paper.classList.add = "clipboard-paper";
+    paper.style.position = 'absolute';
+    paper.style.top = '0px';
+    paper.style.left = '50%';
+    paper.style.transform = 'translateX(-50%)';
+    paper.style.width = 'calc(100% - 10px)';
+    paper.style.height = 'calc(100% - 10px)';
+    paper.style.backgroundColor = '#fff';
+    paper.style.borderRadius = '8px';
+    paper.style.boxShadow = 'inset 0 0 10px rgba(0, 0, 0, 0.1)';
+    paper.style.backgroundImage = 'linear-gradient(to bottom, #fff, #f9f9f9)';
+    paper.style.zIndex = '1010';
+    paper.style.position = 'relative';
+    paper.style.overflow = 'hidden';
+    paper.style.display = 'flex';
+    paper.style.flexDirection = 'column';
+    paper.style.justifyContent = 'center';
+    paper.style.alignItems = 'center';
+
+    // Add the elements to the countdown display once
+    countdownDisplay.appendChild(clip);
+    countdownDisplay.appendChild(paper);
+  }
+}
+
+function createCountdownDisplay() {
+  // Create the countdown display if it doesn't exist
+  if (!countdownDisplay) {
+    countdownDisplay = document.createElement('div');
+    countdownDisplay.classList.add('countdown-display');
+    countdownDisplay.style.position = 'fixed';
+    countdownDisplay.style.top = '50%';
+    countdownDisplay.style.left = '-300px';
+    countdownDisplay.style.transform = 'translateY(-50%)';
+    countdownDisplay.style.width = '130px'; 
+    countdownDisplay.style.height = '180px';
+    countdownDisplay.style.backgroundColor = '#deb887';
+    countdownDisplay.style.border = '2px solid #8B4513';
+    countdownDisplay.style.borderRadius = '10px';
+    countdownDisplay.style.boxShadow = '5px 5px 15px rgba(0, 0, 0, 0.1)';
+    countdownDisplay.style.zIndex = '1000';
+    countdownDisplay.style.transition = 'left 0.5s ease-in-out';
+    // Adding the countdown display to the page
+    document.body.appendChild(countdownDisplay);
+
+    // Trigger the slide-in effect after appending to the body
+    setTimeout(() => {
+      countdownDisplay.style.left = '20px'; // Move to visible position
+    }, 10);
+
+    // Create the extra styles only once
+    createCountdownExtraStyles();
+  }
+}
+
+// Function to update the countdown display
+function updateCountdownDisplay(timeLeft) {
+  if (countdownDisplay) {
+    // Update the countdown text inside the clipboard, only change the timer text
+    const timerElement = document.createElement('div');
+    timerElement.style.textAlign = 'center';
+    timerElement.style.fontWeight = 'bold';
+    timerElement.style.fontSize = '24px';
+    timerElement.style.padding = '10px 0';
+    timerElement.textContent = `${Math.floor(timeLeft / 1000)}`;
+    timerElement.style.zIndex = '1030'; // Ensure the countdown text appears on top
+    
+    // Clear previous timer and append the new one to the paper element
+    paper.innerHTML = ''; // Clear any previous timer element
+    paper.appendChild(timerElement);
+  }
+}
+
+function startMultiplierCountdown() {
+  createCountdownDisplay();  // Ensure countdown display exists
+  
+  if (countdownInterval) clearInterval(countdownInterval);  // Clear any existing countdown
+
+  // Start a new countdown
+  countdownInterval = setInterval(() => {
+    const timeLeft = Math.max(0, multiplierEndTime - Date.now());  // Calculate time left
+
+    updateCountdownDisplay(timeLeft);  // Update the display with the remaining time
+
+    if (timeLeft <= 0) {
+      planeMultiplier = 0;  // Reset the multiplier if time is up
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      paper.innerHTML = 'Multiplier ended!';
+      setTimeout(() => countdownDisplay.remove(), 2000);  // Remove the countdown display after 2 seconds
+    }
+  }, 1000);  // Check every second
+}
+
+function spawnAirplane() {
+  const airplane = document.createElement('div');
+  airplane.classList.add('airplane');
+
+  // Random vertical position (avoid too low or high)
+  const top = Math.random() * 60 + 10;
+  airplane.style.top = `${top}vh`;
+
+  document.body.appendChild(airplane);
+
+  // Click to pop
+  airplane.addEventListener('click', () => {
+    // Get position on screen
+    const rect = airplane.getBoundingClientRect();
+  
+    // Convert to transform-friendly values
+    const x = rect.left;
+    const y = rect.top;
+  
+    // Set transform to exact screen position
+    airplane.style.position = 'fixed'; // prevent scroll issues
+    airplane.style.top = '0';
+    airplane.style.left = '0';
+    airplane.style.transform = `translate(${x}px, ${y}px)`;
+  
+    // Remove animations
+    airplane.style.animation = 'none';
+  
+    // Now run the pop effect
+    airplane.classList.add('pop');
+  
+    // Activate the multiplier and set the multiplier end time
+    planeMultiplier = 20;
+    multiplierEndTime = Date.now() + 60000; // 1 minute multiplier
+    startMultiplierCountdown(); // Start the countdown
+  
+    setTimeout(() => airplane.remove(), 300);
+  });
+  
+  // Remove after flying across
+  setTimeout(() => {
+    if (document.body.contains(airplane)) {
+      airplane.remove();
+    }
+  }, 10000); // match animation duration
+}
+
+function startSpawning() {
+  setInterval(() => {
+    // Spawn new airplanes at random intervals between 60,000ms (1 minute) and 90,000ms (1.5 minutes)
+    const randomInterval = Math.random() * 30000 + 60000; // between 60s and 90s
+    if (Math.random() < 0.7) {
+      console.log("Spawned Paper Airplane");
+      spawnAirplane();
+    }
+  }, 60000); // Spawn a new airplane every minute, but interval is random
+}
+
+startSpawning();
+
+// This function will be used to reset the timer and add 60 seconds when a new plane is hit
+function addTimeToMultiplier() {
+  if (planeMultiplier > 0) {
+    multiplierEndTime += 60000; // Add 60 seconds to the countdown
+  }
+}
+
+///////////////////////////////
+////SETTINGS FUNCTIONALITY////
+/////////////////////////////
+
+const readableNumbersToggle = document.getElementById("readable-numbers-toggle");
+const readableNumbersNote = document.getElementById("readable-numbers-note");
+
+
+// Handle "Readable Numbers" toggle independently from audio settings
+readableNumbersNote.addEventListener("click", () => {
+  isReadableNumbersOn = !isReadableNumbersOn;
+  readableNumbersToggle.textContent = isReadableNumbersOn ? "On" : "Off";
+
+  // Toggle pin color based on the state
+  readableNumbersNote.classList.toggle("green", isReadableNumbersOn);
+});
+
+/////////////////////
+////CASINO LOGIC////
+///////////////////
+
+const playButton = document.getElementById('play-game');
+const gameSelect = document.getElementById('game-select');
+const betAmountInput = document.getElementById('bet-amount');
+const gameResultDiv = document.getElementById('game-result');
+const gameSection = document.getElementById('casino-game-section');
+const moneyDisplay = document.getElementById('current-money-display');
+
+let currentGame = {
+  playerCards: [],
+  dealerCards: [],
+  bet: 0
+};
+
+const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+
+function updateCasinoMoneyDisplay() {
+  moneyDisplay.textContent = `Current Notes: ${isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)}`;
+}
+
+function drawCard() {
+  const value = Math.floor(Math.random() * 10) + 2;
+  const cardValue = (value === 10 && Math.random() < 0.25) ? 11 : value;
+  const suit = suits[Math.floor(Math.random() * suits.length)];
+  return { value: cardValue, suit };
+}
+
+function renderCards(cards) {
+  return cards.map(card => {
+    let displayValue = card.value === 11 ? 'ace' : card.value;
+    const imageName = `${displayValue}_of_${card.suit}`;
+    return `<img src="${getCardSrc(imageName)}" class="card" width="80" />`;
+  }).join('');
+}
+
+function calculateTotal(cards) {
+  let total = cards.reduce((sum, card) => sum + card.value, 0);
+  let aces = cards.filter(card => card.value === 11).length;
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces--;
+  }
+  return total;
+}
+
+function renderBlackjackGame(end = false, message = '') {
+  const { playerCards, dealerCards, bet } = currentGame;
+  const playerTotal = calculateTotal(playerCards);
+  const dealerTotal = calculateTotal(dealerCards);
+
+  let controls = '';
+  if (!end) {
+    controls = `
+      <button id="hit-button">Hit</button>
+      <button id="stand-button">Stand</button>
+    `;
+  }
+
+  gameSection.innerHTML = `
+    <h2>Blackjack</h2>
+    <div class="blackjack-hand">
+      <h3>Your Hand (${playerTotal}):</h3>
+      <div class="cards">${renderCards(playerCards)}</div>
+    </div>
+    <div class="blackjack-hand">
+      <h3>Dealer's Hand (${end ? dealerTotal : '?'}):</h3>
+      <div class="cards">
+        ${end ? renderCards(dealerCards) : `
+          <img src=${require('url:./images/casino/blackjack/back.png')} class="card" width="80" />
+          <img src=${require('url:./images/casino/blackjack/back.png')} class="card back" width="80" />
+        `}
+      </div>
+    </div>
+    <p>${message}</p>
+    ${controls}
+    ${end ? `<p>New Balance: $${isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)}</p><button id="return-button">Return</button>` : ''}
+  `;
+
+  if (!end) {
+    document.getElementById('hit-button').addEventListener('click', playerHits);
+    document.getElementById('stand-button').addEventListener('click', playerStands);
+  } else {
+    document.getElementById('return-button').addEventListener('click', () => {
+      mainContainer.style.transform = 'translate(100%, 0)';
+    });
+  }
+}
+
+function playerHits() {
+  currentGame.playerCards.push(drawCard());
+  const total = calculateTotal(currentGame.playerCards);
+  if (total > 21) {
+    money -= currentGame.bet;
+    updateCasinoMoneyDisplay();
+    renderBlackjackGame(true, 'You busted!');
+  } else {
+    renderBlackjackGame();
+  }
+}
+
+function playerStands() {
+  while (calculateTotal(currentGame.dealerCards) < 17) {
+    currentGame.dealerCards.push(drawCard());
+  }
+
+  const playerTotal = calculateTotal(currentGame.playerCards);
+  const dealerTotal = calculateTotal(currentGame.dealerCards);
+
+  let resultText = '';
+  if (dealerTotal > 21 || playerTotal > dealerTotal) {
+    money += currentGame.bet;
+    resultText = 'You win!';
+  } else if (playerTotal < dealerTotal) {
+    money -= currentGame.bet;
+    resultText = 'Dealer wins!';
+  } else {
+    resultText = 'Push!';
+  }
+
+  updateCasinoMoneyDisplay();
+  renderBlackjackGame(true, resultText);
+}
+
+playButton.addEventListener('click', () => {
+  const bet = parseInt(betAmountInput.value);
+  const selectedGame = gameSelect.value;
+
+  if (bet <= 0 || bet > money) {
+    gameResultDiv.textContent = "Invalid bet.";
+    return;
+  }
+
+  gameResultDiv.textContent = '';
+
+  // Reset the game section's theme class
+  gameSection.classList.remove('blackjack-theme', 'roulette-theme', 'slots-theme', 'ride-the-bus-theme');
+  
+  // Add the corresponding class based on the selected game
+  if (selectedGame === 'blackjack') {
+    gameSection.classList.add('blackjack-theme');
+  } else if (selectedGame === 'roulette') {
+    gameSection.classList.add('roulette-theme');
+  } else if (selectedGame === 'slots') {
+    gameSection.classList.add('slots-theme');
+  } else if (selectedGame === 'ride-the-bus') {
+    gameSection.classList.add('ride-the-bus-theme');
+  }
+
+  mainContainer.style.transition = 'transform 1s ease-in-out';
+  mainContainer.style.transform = 'translate(100%, 100vh)';
+
+  if (selectedGame === 'blackjack') {
+    currentGame = {
+      playerCards: [drawCard(), drawCard()],
+      dealerCards: [drawCard()],
+      bet
+    };
+    renderBlackjackGame();
+  } else {
+    const result = Math.random() < 0.5 ? 'win' : 'lose';
+    money = result === 'win' ? money + bet : money - bet;
+    updateCasinoMoneyDisplay();
+
+    gameSection.innerHTML = `
+      <h2>${selectedGame.replace(/-/g, ' ')}</h2>
+      <p>You placed a ${isReadableNumbersOn ? readableNumber(bet) : bet.toFixed(0)} note bet. You ${result}!</p>
+      <p>New Balance: ${isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)} notes</p>
+      <button id="return-button">Return to Game Selection</button>
+    `;
+
+    setTimeout(() => {
+      document.getElementById('return-button').addEventListener('click', () => {
+        mainContainer.style.transform = 'translate(100%, 0)';
+      });
+
+      if (result === 'lose') {
+        setTimeout(() => {
+          mainContainer.style.transform = 'translate(100%, 0)';
+        }, 2000);
+      }
+    }, 100);
+  }
+});
+
+
+// Initialize display
+updateCasinoMoneyDisplay();

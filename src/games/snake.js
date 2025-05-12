@@ -3,13 +3,23 @@ const ctx = canvas.getContext("2d");
 const startBtn = document.getElementById("startBtn");
 const menu = document.getElementById("menu");
 const gameContainer = document.getElementById("game-container");
+const scoreDisplay = document.createElement("div"); // Create score display
+scoreDisplay.id = "score";
+scoreDisplay.style.fontSize = "20px";
+scoreDisplay.style.marginTop = "10px";
+scoreDisplay.style.color = "#0f0";
+gameContainer.appendChild(scoreDisplay);
 
-const box = 10;
+// Set canvas size to be a multiple of box
+const box = 17;
+const gridSize = 15;
+canvas.width = box * gridSize;
+canvas.height = box * gridSize;
+
 const rows = canvas.height / box;
 const cols = canvas.width / box;
-console.log(rows, cols);
 
-let snake, direction, food, game;
+let snake, direction, nextDirection, food, game, score;
 
 startBtn.addEventListener("click", () => {
   menu.style.display = "none";
@@ -19,22 +29,54 @@ startBtn.addEventListener("click", () => {
 
 function startGame() {
   snake = [{ x: 5 * box, y: 5 * box }];
-  direction = "RIGHT";
-  food = {
-    x: Math.floor(Math.random() * cols) * box,
-    y: Math.floor(Math.random() * rows) * box,
-  };
+  direction = null; // start still
+  nextDirection = null;
+  score = 0;
+  updateScore();
+  food = generateFood();
 
+  document.removeEventListener("keydown", changeDirection);
   document.addEventListener("keydown", changeDirection);
+
+  clearInterval(game);
   game = setInterval(draw, 150);
 }
 
+function updateScore() {
+  scoreDisplay.textContent = `Score: ${score}`;
+
+  window.parent.postMessage(
+    { type: "scoreUpdate", score: score },
+    "*" // Use a specific origin in production for security
+  );
+}
+
 function changeDirection(event) {
-  const key = event.key;
-  if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-  else if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-  else if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-  else if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+  const key = event.key.toLowerCase();
+  if ((key === "arrowleft" || key === "a") && direction !== "RIGHT")
+    nextDirection = "LEFT";
+  else if ((key === "arrowup" || key === "w") && direction !== "DOWN")
+    nextDirection = "UP";
+  else if ((key === "arrowright" || key === "d") && direction !== "LEFT")
+    nextDirection = "RIGHT";
+  else if ((key === "arrowdown" || key === "s") && direction !== "UP")
+    nextDirection = "DOWN";
+
+  // Set initial direction if it's the first move
+  if (!direction && nextDirection) {
+    direction = nextDirection;
+  }
+}
+
+function generateFood() {
+  let newFood;
+  do {
+    newFood = {
+      x: Math.floor(Math.random() * cols) * box,
+      y: Math.floor(Math.random() * rows) * box,
+    };
+  } while (snake.some((seg) => seg.x === newFood.x && seg.y === newFood.y));
+  return newFood;
 }
 
 function draw() {
@@ -50,8 +92,11 @@ function draw() {
   ctx.fillStyle = "red";
   ctx.fillRect(food.x, food.y, box, box);
 
+  if (!direction) return; // stand still until player moves
+
   // Move snake
   let head = { ...snake[0] };
+  direction = nextDirection || direction;
   if (direction === "LEFT") head.x -= box;
   else if (direction === "RIGHT") head.x += box;
   else if (direction === "UP") head.y -= box;
@@ -66,7 +111,7 @@ function draw() {
     snake.some((seg) => seg.x === head.x && seg.y === head.y)
   ) {
     clearInterval(game);
-    alert("Game Over!");
+    alert("Game Over! Final Score: " + score);
     menu.style.display = "block";
     gameContainer.style.display = "none";
     return;
@@ -76,10 +121,9 @@ function draw() {
 
   // Eating food
   if (head.x === food.x && head.y === food.y) {
-    food = {
-      x: Math.floor(Math.random() * cols) * box,
-      y: Math.floor(Math.random() * rows) * box,
-    };
+    score++;
+    updateScore();
+    food = generateFood();
   } else {
     snake.pop();
   }

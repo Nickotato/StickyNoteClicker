@@ -16,12 +16,15 @@
 
 
       <section class="section" id="main-section">
-        <nav class="nav-notes">
+        <nav class="nav-notes" id="main-section-nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: -3deg">
+            Settings
+          </button>
           <button class="move-screen-buttons stickynote" style="rotate: 5deg">
             Games
           </button>
-          <button class="move-screen-buttons stickynote" style="rotate: -3deg">
-            Settings
+          <button class="move-screen-buttons stickynote" id="casino-screen-note" style="rotate: 5deg; display: none;">
+            Casino
           </button>
         </nav>
 
@@ -53,7 +56,13 @@
           <div class="game-note" data-game="game1" id="game1">
             <div class="game-content">
             
-              <iframe src="./games/snake.html" class="game-frame" loading="lazy"></iframe>
+              <iframe src="./games/snake.html" style="
+              width: 255px;
+              height: 255px;
+              transform: scale(0.70);
+              border: none;
+              display: block;
+              " class="game-frame" loading="lazy"></iframe>
             </div>
           </div>
           <div class="game-note" data-game="game2" id="game2">
@@ -115,6 +124,11 @@
           <p id="music-mute-toggle">Mute</p>
         </div>
 
+        <div class="settings-note" id="readable-numbers-note" style="--random-rotation: 1deg; cursor: pointer;">
+          <label for="readable-numbers-toggle"><strong>Readable Numbers</strong></label>
+          <p id="readable-numbers-toggle">Off</p>
+        </div>
+
         <div
           id="delete-save"
           class="danger settings-note"
@@ -136,6 +150,45 @@
             0/0
           </div>
         </div>
+      </section>
+
+      
+      <section class="section" id="casino-section">
+        <nav class="nav-notes">
+          <button class="move-screen-buttons stickynote" style="rotate: 2deg">
+            Note
+          </button>
+        </nav>
+        <h1>Casino </h1>
+
+        <!-- <section class="slot-machine">
+          <div class="slot">🍒</div>
+          <div class="slot">7️⃣</div>
+          <div class="slot">🍋</div>
+        </section> -->
+        <div class="casino-controls">
+          <p id="current-money-display">Current Money: $100</p>
+
+        
+          <label for="bet-amount">Bet Amount: $</label>
+          <input type="number" id="bet-amount" value="10" min="1" />
+        
+          <label for="game-select">Choose a game:</label>
+          <select id="game-select">
+            <option value="blackjack">Blackjack</option>
+            <option value="ride-the-bus">Ride the Bus</option>
+            <option value="roulette">Roulette</option>
+            <option value="slots">Slot Machine</option>
+          </select>
+        
+          <button id="play-game">Play Game</button>
+        
+          <div id="game-result" style="margin-top: 1rem;"></div>
+        </div>
+        
+      </section>
+
+      <section class="section" id="casino-game-section">
       </section>
     <script src="./index.mjs" type="module"></script>
   </body>

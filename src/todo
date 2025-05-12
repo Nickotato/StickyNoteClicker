@@ -1,14 +1,20 @@
 Fix games.
 Remove Achievements when save deleted.
-Fix visuals in mobile
-Find a favicon
-Bulk buy options
-paperclips
+Fix visuals in mobile.
+Find a favicon.
+paperclips.
 Add a shake effect if upgrade max rather than alert.
-Limited time multipliers.
-Upgrade to increase output of workers by the amount owned.
+Add schroeder to upgrades and change bg music to beethoven.
+Finish Casino Games.
+Remove Casino Note on delete save.
+Allow for multiple save files.
+Prestieges.
 
 Completed:
 upgrade to increase value(like super glue);
 Fix achievements being given every reload.
 Change rate visuals
+Bulk buy options
+Limited time multipliers.
+Add gambling as an upgrade.
+Upgrade to increase output of workers by the amount owned.

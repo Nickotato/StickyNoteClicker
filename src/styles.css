@@ -403,7 +403,8 @@ input[type="range"]::-moz-range-thumb:hover {
 .shop-section {
   width: 40%;
   height: 100%;
-  padding: 30px 20px;
+  /* padding: 30px 20px 0px 20px; */
+  padding-top: 30px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -467,7 +468,7 @@ input[type="range"]::-moz-range-thumb:hover {
   flex-direction: column;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.1) 2px 6px 12px;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
   transform: rotate(var(--random-rotate, 0deg));
   justify-content: space-between;
   align-items: center;
@@ -476,7 +477,7 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .shop-item:hover {
-  transform: scale(1.02) rotate(var(--random-rotate, 0deg));
+  transform: scale(1.02) rotate(0deg);
   /* IMPORTANT */
   /* NEED TO MAKE HOVER WORK AND UPDATE TRANSFORM */
 }
@@ -500,10 +501,276 @@ input[type="range"]::-moz-range-thumb:hover {
   margin: 4px 0;
 }
 
+.bulkBuySection {
+  background: #fdf69c;
+  /* padding: 14px; */
+  border-radius: 8px 8px 0px 0px;
+  /* width: 90%; */
+  /* margin: 20px auto 0 auto; */
+  position: relative;
+  /* transform: rotate(-2deg); */
+  box-shadow: 4px -4px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+/* Simulate tape */
+.bulkBuySection::before,
+.bulkBuySection::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 12px;
+  background: rgba(255,255,255,0.6);
+  top: -6px;
+  transform: rotate(-10deg);
+  border-radius: 2px;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}
+
+.bulkBuySection::after {
+  right: 10px;
+  transform: rotate(10deg);
+}
+
+.bulkBuySection::before {
+  left: 10px;
+}
+
+.bulkBuyButton {
+ cursor: pointer;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ text-align: center;
+}
+
+/* CASINO SECTION */
+
+#casino-section {
+  left: -100vw;
+  top: 0px;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+#casino-section h1 {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: gold;
+  text-shadow: 0 0 5px #f0f, 0 0 10px red;
+}
+
+.slot-machine {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 3rem auto;
+  max-width: 600px;
+}
+
+.slot {
+  width: 100px;
+  height: 100px;
+  background: #fffcab;
+  border: 2px solid #d1c700;
+  border-radius: 10px;
+  box-shadow: 
+    2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #000;
+  position: relative;
+  transform: rotate(-2deg);
+  animation: bounce 1s infinite alternate;
+}
+
+.slot:nth-child(2) {
+  background: #cafffb;
+  border-color: #00cccc;
+  transform: rotate(1deg);
+  animation-delay: 0.2s;
+}
+
+.slot:nth-child(3) {
+  background: #ffc0cb;
+  border-color: #ff69b4;
+  transform: rotate(2deg);
+  animation-delay: 0.4s;
+}
+
+.slot::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: red;
+  border-radius: 50%;
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 3px rgba(0,0,0,0.8);
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  100% {
+    transform: translateY(10px) rotate(-2deg);
+  }
+}
+
+.slot:nth-child(2) {
+  animation-name: bounce2;
+}
+.slot:nth-child(3) {
+  animation-name: bounce3;
+}
+
+@keyframes bounce2 {
+  0% {
+    transform: translateY(0) rotate(1deg);
+  }
+  100% {
+    transform: translateY(10px) rotate(1deg);
+  }
+}
+
+@keyframes bounce3 {
+  0% {
+    transform: translateY(0) rotate(2deg);
+  }
+  100% {
+    transform: translateY(10px) rotate(2deg);
+  }
+}
+
+.casino-controls {
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+}
+
+.casino-controls input, .casino-controls select, .casino-controls button {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+}
+
+#casino-game-section {
+  left: -100vw;
+  top: -100vh;
+}
+
+.blackjack-game {
+  text-align: center;
+  padding: 2rem;
+  color: #fff;
+}
+
+.blackjack-hand {
+  margin-bottom: 1rem;
+}
+
+.blackjack-hand .cards {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.blackjack-game img.card {
+  width: 80px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.card.back {
+  filter: brightness(0.5);
+}
+
+
+/* General Styles for the casino game section */
+#casino-game-section {
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Blackjack Theme */
+.blackjack-theme {
+  background-color: #2a2a2a;
+  color: white;
+  font-family: 'Courier New', monospace;
+  border: 2px solid #4caf50;
+}
+
+.blackjack-theme h2 {
+  color: #4caf50;
+}
+
+/* Roulette Theme */
+.roulette-theme {
+  background-color: #f44336;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  border: 2px solid #ffeb3b;
+}
+
+.roulette-theme h2 {
+  color: #ffeb3b;
+}
+
+/* Slots Theme */
+.slots-theme {
+  background-color: #3f51b5;
+  color: white;
+  font-family: 'Comic Sans MS', sans-serif;
+  border: 2px solid #ff4081;
+}
+
+.slots-theme h2 {
+  color: #ff4081;
+}
+
+/* Ride the Bus Theme */
+.ride-the-bus-theme {
+  background-color: #8bc34a;
+  color: white;
+  font-family: 'Times New Roman', serif;
+  border: 2px solid #009688;
+}
+
+.ride-the-bus-theme h2 {
+  color: #009688;
+}
+
+
+/* END OF CASINO SECTION */
+
 #rate-displays {
+  /* will-change: transform, opacity; */
   position: fixed;
   bottom: 24px;
-  left: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -512,8 +779,8 @@ input[type="range"]::-moz-range-thumb:hover {
   border: 1px solid #dcdcdc;
   border-radius: 6px;
   box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateX(-120%);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  /* transform: translateX(-120%); */
+  transition: left 0.3s ease, opacity 0.3s ease;
   opacity: 0;
   z-index: 100;
   font-size: 14px;
@@ -530,7 +797,7 @@ input[type="range"]::-moz-range-thumb:hover {
 #rate-displays.visible {
   transition: all 0.2s ease-in-out;
   opacity: 1;
-  transform: translateX(0%);
+  /* transform: translateX(0%); */
 }
 
 .rate-box {
@@ -580,6 +847,77 @@ input[type="range"]::-moz-range-thumb:hover {
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.airplane {
+  position: absolute;
+  width: 60px;
+  height: 40px;
+  cursor: pointer;
+  animation: fly 10s linear forwards, float 2s ease-in-out infinite;
+  transform-origin: center;
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+  background: transparent;
+}
+
+.airplane::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-left: 60px solid #ccc;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+}
+
+.airplane::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-left: 45px solid #aaa;
+  border-top: 15px solid transparent;
+  border-bottom: 25px solid transparent;
+}
+
+
+.clipboard-paper::before {
+  content: '',
+  position: 'absolute',
+  top: '-8px', // Paper edge slightly above the main paper element
+  left: '50%',
+  transform: 'translateX(-50%) rotate(-5deg)',
+  width: '50px', // Adjust width for a more dramatic fold
+  height: '12px', // Adjust height to simulate a curl
+  backgroundColor: '#f0e68c', // Light yellowish color to simulate paper edge
+  borderRadius: '6px', // Slightly rounded edges for the curl effect
+  zIndex: '1020', // Ensure it is above the paper
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15)', // Optional shadow for the curled paper effect
+}
+
+@keyframes fly {
+  from { left: -80px; }
+  to { left: 110%; }
+}
+
+@keyframes float {
+  0%   { transform: translateY(0) rotate(45deg); }
+  50%  { transform: translateY(-15px) rotate(45deg); }
+  100% { transform: translateY(0) rotate(45deg); }
+}
+
+.pop {
+  animation: pop 0.3s forwards !important;
+  animation-play-state: paused;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1) rotate(45deg); opacity: 1; }
+  100% { transform: scale(1.8) rotate(45deg); opacity: 0; }
 }
 
 @keyframes fall {

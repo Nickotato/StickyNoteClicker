@@ -7,11 +7,14 @@
       body {
         /* background: #111; */ /* Remove or comment this */
         margin-top: 50px;
-        color: #fff;
+        color: #0f0;
         text-align: center;
         font-family: sans-serif;
       }
 
+      body::-webkit-scrollbar {
+        display: none;
+      }
       #game-container {
         display: none;
         position: absolute;
@@ -52,7 +55,7 @@
     </div>
 
     <div id="game-container">
-      <canvas id="game" width="250px" height="250px"></canvas>
+      <canvas id="game" width="255px" height="255px"></canvas>
     </div>
 
     <script src="snake.js"></script>

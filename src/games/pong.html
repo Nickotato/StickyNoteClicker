@@ -7,7 +7,11 @@
       canvas {
         display: block;
         margin: 0 auto;
-        background: #000;
+        background: transparent;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
       .start-screen {
         position: absolute;
@@ -114,16 +118,17 @@
       }
 
       function draw() {
-        drawRect(0, 0, canvas.width, canvas.height, "#000"); // Clear
-        drawRect(player.x, player.y, player.width, player.height, "#fff");
+        // clearRect(0, 0, canvas.width, canvas.height);
+        drawRect(0, 0, canvas.width, canvas.height, "#fffc8f"); // Clear
+        drawRect(player.x, player.y, player.width, player.height, "#000");
         drawRect(
           computer.x,
           computer.y,
           computer.width,
           computer.height,
-          "#fff"
+          "#000"
         );
-        drawBall(ball.x, ball.y, ball.size, "#fff");
+        drawBall(ball.x, ball.y, ball.size, "#000");
       }
 
       function loop() {
