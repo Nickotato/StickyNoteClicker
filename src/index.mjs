@@ -34,6 +34,9 @@ import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
 import { defaultAchievements } from "./achievements.mjs";
 import { defaultVisuals } from "./visual.mjs";
+import {setUpSettings,} from "./settings.mjs";
+
+setUpSettings();
 
 let workers = {};
 for (const key in defaultWorkers) {
@@ -149,17 +152,17 @@ shopSection.appendChild(visualContent);
 
 const bulkBuySection = document.createElement("div");
 bulkBuySection.className = "bulkBuySection";
-const [bulk1, bulk10, bulk100] = ["div", "div", "div"].map((tag) =>
+const [bulk1, bulk5, bulk10] = ["div", "div", "div"].map((tag) =>
   document.createElement(tag)
 );
 
 bulk1.className = "shop-tab bulkBuyButton active";
+bulk5.className = "shop-tab bulkBuyButton";
 bulk10.className = "shop-tab bulkBuyButton";
-bulk100.className = "shop-tab bulkBuyButton";
 bulk1.textContent = "1";
+bulk5.textContent = "5";
 bulk10.textContent = "10";
-bulk100.textContent = "100";
-[bulk1, bulk10, bulk100].forEach((el) => bulkBuySection.appendChild(el));
+[bulk1, bulk5, bulk10].forEach((el) => bulkBuySection.appendChild(el));
 shopSection.appendChild(bulkBuySection);
 
 let money = 0;
@@ -589,6 +592,8 @@ function updateSaveSlotUI(selectedSlot) {
   ["save1", "save2"].forEach((slot) => {
     document.getElementById(`${slot}-toggle`).innerText =
       slot === selectedSlot ? "Selected" : "Not Selected";
+      
+      document.getElementById(`${slot}-note`).classList.toggle("green", slot === selectedSlot);
   });
 }
 
@@ -609,6 +614,7 @@ function initGame(saveSlot = "save1") {
   updateMoneyPerSecondText();
   updateRateDisplays();
   updateAchievementStats();
+  updateSaveSlotUI(saveSlot);
 
   document.getElementById("delete-save").addEventListener("click", () => {
     newGame(currentSaveSlot); // Confirmed reset on delete
@@ -1129,6 +1135,8 @@ function load(saveSlot = "save1") {
     }
   }
 
+  document.getElementById("casino-screen-note").style.display = upgrades.upgrade6.owned > 0 ? "block" : "none";
+
   // Optional: store current slot for global access
   currentSaveSlot = saveSlot;
   // updateSaveSlotUI(saveSlot);
@@ -1225,13 +1233,14 @@ function newGame(saveSlot = "save1", confirmReset = true) {
 
   currentSaveSlot = saveSlot;
 
+  
+
   // Reinitialize UI
   updateMoneyText();
   updateMoneyPerSecondText();
   createWorkerElements();
   createUpgradeElements();
-  // checkForAchievements();
-  // updateSaveSlotUI(saveSlot); // if you use this
+  // updateSaveSlotUI(saveSlot);
 
   alert("New game started!");
 }

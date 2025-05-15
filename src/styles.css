@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: "Sniglet", system-ui, sans-serif;
+  font-family: "Sniglet", system-ui;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -210,7 +210,8 @@ body {
   flex-wrap: wrap;
   align-content: center;
   justify-content: center;
-  padding: 40px;
+  padding: 100px 200px 0px 200px;
+  /* padding-top: 100px; */
   gap: 30px;
   top: 100vh;
   box-sizing: border-box;
@@ -302,6 +303,33 @@ input[type="range"]::-moz-range-thumb {
 input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.2);
 }
+
+.settings-note-button-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.settings-note-button {
+  margin-bottom: 0px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  width: 90%;
+  border: none;
+  background: #fff56c;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 5px;
+  font-family: "Sniglet", system-ui, sans-serif;
+}
+
+.settings-note-button:hover {
+  filter: brightness(0.9);
+}
+
 /* END OF SETTINGS SECTION */
 /* ACHIEVEMENTS SECTION */
 #achievements-section {
@@ -359,15 +387,18 @@ input[type="range"]::-moz-range-thumb:hover {
   position: absolute;
   top: 5vh;
   left: 5vh;
-  /* display: flex; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
-  display: grid;
+  /* display: grid;
   grid-template-columns: 1fr 1fr;
-  row-gap: 20px;
+  row-gap: 20px; */
 }
 
 .move-screen-buttons {
   margin-right: 20px;
+  margin-bottom: 10px;
   cursor: pointer;
 }
 
@@ -1268,6 +1299,21 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 /* MEDIA QUERIES  */
+
+@media (max-width: 1400px) {
+  .settings-note {
+    width: 130px;
+    height: 130px;
+    text-align: center
+  }
+  .settings-note-button {
+    margin-top: 2px;
+    padding: 5px;
+  }
+  .settings-note-button:nth-child(1) { 
+    margin-top: 10px;
+  }
+}
 
 @media (max-width: 768px) {
   #main-section {
