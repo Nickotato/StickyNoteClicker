@@ -23,11 +23,17 @@ import {
   soundEffects,
   playSoundEffects,
 } from "./audio.mjs";
-import { readableNumber, getTotalCost, getCardSrc } from "./utils.mjs";
+import {
+  readableNumber,
+  getTotalCost,
+  getCardSrc,
+  capitalize,
+} from "./utils.mjs";
 
 import { defaultWorkers } from "./workers.mjs";
 import { defaultUpgrades } from "./upgrades.mjs";
 import { defaultAchievements } from "./achievements.mjs";
+import { defaultVisuals } from "./visual.mjs";
 
 let workers = {};
 for (const key in defaultWorkers) {
@@ -38,6 +44,7 @@ for (const key in defaultWorkers) {
 }
 
 let upgrades = { ...defaultUpgrades };
+let visuals = { ...defaultVisuals };
 let achievements = [...defaultAchievements];
 
 const stickyNoteColors = {
@@ -120,6 +127,11 @@ upgradeTab.className = "shop-tab stickynote";
 upgradeTab.textContent = "Upgrades";
 tabsContainer.appendChild(upgradeTab);
 
+const visualTab = document.createElement("button");
+visualTab.className = "shop-tab stickynote";
+visualTab.textContent = "Visual";
+tabsContainer.appendChild(visualTab);
+
 const workerContent = document.createElement("div");
 workerContent.className = "shop-content active";
 workerContent.id = "worker-content";
@@ -129,6 +141,11 @@ const upgradeContent = document.createElement("div");
 upgradeContent.className = "shop-content";
 upgradeContent.id = "upgrade-content";
 shopSection.appendChild(upgradeContent);
+
+const visualContent = document.createElement("div");
+visualContent.className = "shop-content";
+visualContent.id = "visual-content";
+shopSection.appendChild(visualContent);
 
 const bulkBuySection = document.createElement("div");
 bulkBuySection.className = "bulkBuySection";
@@ -296,7 +313,10 @@ function createUpgradeElements() {
           100
         ).toFixed(1)}% of cps multiplied by NPS`;
       } else if (upgrade.key === "upgrade3") {
-        return `You get ${upgrade.value ** upgrade.owned} per click`;
+        const amountString = isReadableNumbersOn
+          ? readableNumber(upgrade.value ** upgrade.owned)
+          : (upgrade.value ** upgrade.owned).toFixed(0);
+        return `You get ${amountString} per click`;
       } else if (upgrade.key === "upgrade4") {
         return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
           0
@@ -369,10 +389,82 @@ function createUpgradeElements() {
   });
 }
 
+function createVisualElements() {
+  visualContent.innerHTML = "";
+  Object.values(visuals).forEach((visual) => {
+    const visualEl = document.createElement("div");
+    visualEl.className = `shop-item stickynote no-select visual-note ${
+      visual.selected ? "selected" : ""
+    }`;
+
+    const angle = Math.random() * 10 - 5;
+    let transform = `rotate(${angle}deg)`;
+    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    visualEl.style.transform = transform;
+
+    visualEl.style.margin = "10px";
+    visualEl.style.background = getRandomStickyNoteColor();
+
+    visualEl.addEventListener("mouseenter", () => {
+      visualEl.style.transform = "rotate(0deg)";
+    });
+
+    visualEl.addEventListener("mouseleave", () => {
+      visualEl.style.transform = transform;
+    });
+
+    if (visual.owned) {
+      visualEl.style.filter = visual.selected
+        ? "brightness(1.2)"
+        : "brightness(0.9)";
+    } else if (visual.owned + buyAmount > 1) {
+      visualEl.style.filter = `brightness(0.7)`;
+    }
+
+    visualEl.innerHTML = `
+      <button class="shop-item-button">${visual.name}</button>
+      <p class="shop-item-cost">Cost: ${visual.cost}</p>
+      <p class="shop-item-status">${
+        visual.owned ? (visual.selected ? "Selected" : "Owned") : "Not Owned"
+      }</p>
+    `;
+
+    visualEl.addEventListener("click", () => {
+      if (!visual.owned) {
+        if (money >= visual.cost) {
+          money -= visual.cost;
+          visual.owned = true;
+          playSoundEffects(soundEffects.orb);
+          updateMoneyText();
+        } else {
+          playSoundEffects(soundEffects.hover);
+          return;
+        }
+      } else {
+        // Deselect others of the same type
+        Object.values(visuals).forEach((v) => {
+          if (v.type === visual.type) v.selected = false;
+        });
+
+        // Select this visual
+        visual.selected = true;
+      }
+
+      // Refresh visuals
+      updateVisualDescriptions();
+      updateVisualDisplay();
+    });
+
+    visualContent.appendChild(visualEl);
+  });
+  updateVisualDescriptions();
+  updateVisualDisplay();
+}
+
 function findUpgradeCost(key) {
   if (key === "upgrade1") return 3;
   else if (key === "upgrade2") return 10;
-  else if (key === "upgrade3") return 2.5;
+  else if (key === "upgrade3") return 2.2;
   else if (key === "upgrade4") return 5;
   else if (key === "upgrade5") return 1;
   else if (key === "upgrade6") return 1;
@@ -382,7 +474,7 @@ function findUpgradeCost(key) {
 workerTab.addEventListener("click", () => {
   let before = undefined;
   if (window.innerWidth <= 768) {
-    before = toggleShopSection(workerTab, upgradeTab);
+    before = toggleShopSection(workerTab, upgradeTab, visualTab);
   }
 
   playSoundEffects(soundEffects.click2);
@@ -390,6 +482,8 @@ workerTab.addEventListener("click", () => {
   upgradeTab.classList.remove("active");
   workerContent.classList.add("active");
   upgradeContent.classList.remove("active");
+  visualTab.classList.remove("active");
+  visualContent.classList.remove("active");
 
   if (window.innerWidth <= 768 && before) {
     workerTab.classList.remove("active");
@@ -399,7 +493,7 @@ workerTab.addEventListener("click", () => {
 upgradeTab.addEventListener("click", () => {
   let before = undefined;
   if (window.innerWidth <= 768) {
-    before = toggleShopSection(upgradeTab, workerTab);
+    before = toggleShopSection(upgradeTab, workerTab, visualTab);
   }
 
   playSoundEffects(soundEffects.click2);
@@ -407,26 +501,56 @@ upgradeTab.addEventListener("click", () => {
   workerTab.classList.remove("active");
   upgradeContent.classList.add("active");
   workerContent.classList.remove("active");
+  visualTab.classList.remove("active");
+  visualContent.classList.remove("active");
 
   if (window.innerWidth <= 768 && before) {
     upgradeTab.classList.remove("active");
   }
 });
 
-function toggleShopSection(tab, othertab) {
+visualTab.addEventListener("click", () => {
+  let before = undefined;
+  if (window.innerWidth <= 768) {
+    before = toggleShopSection(visualTab, workerTab, upgradeTab);
+  }
+
+  playSoundEffects(soundEffects.click2);
+
+  // Set active states
+  visualTab.classList.add("active");
+  workerTab.classList.remove("active");
+  upgradeTab.classList.remove("active");
+
+  // Toggle content visibility
+  visualContent.classList.add("active");
+  workerContent.classList.remove("active");
+  upgradeContent.classList.remove("active");
+
+  if (window.innerWidth <= 768 && before) {
+    visualTab.classList.remove("active");
+  }
+});
+
+function toggleShopSection(tab, othertab1, othertab2) {
   if (tab.classList.contains("active")) {
     shopSection.classList.toggle("open");
     playSoundEffects(soundEffects.whoosh1);
     return true;
   } else if (
-    !(tab.classList.contains("active") || othertab.classList.contains("active"))
+    !(
+      tab.classList.contains("active") ||
+      othertab1.classList.contains("active") ||
+      othertab2.classList.contains("active")
+    )
   ) {
     shopSection.classList.toggle("open");
     playSoundEffects(soundEffects.whoosh1);
     return false;
   } else if (
     !tab.classList.contains("active") &&
-    othertab.classList.contains("active") &&
+    (othertab1.classList.contains("active") ||
+      othertab2.classList.contains("active")) &&
     !shopSection.classList.contains("open")
   ) {
     shopSection.classList.toggle("open");
@@ -451,6 +575,7 @@ function initGame() {
   if (localStorage.getItem("stickyNotesGame") != null) load();
   createWorkerElements();
   createUpgradeElements();
+  createVisualElements();
   updateMoneyText();
   updateMoneyPerSecondText();
   updateRateDisplays();
@@ -532,7 +657,9 @@ function spawnFloatingNumber(x, y, amount) {
   number.className = "floating-number";
   number.style.left = `${x}px`;
   number.style.top = `${y}px`;
-  number.textContent = `+${amount}`;
+  number.textContent = `+${
+    isReadableNumbersOn ? readableNumber(amount) : amount.toFixed(0)
+  }`;
 
   document.body.appendChild(number);
   setTimeout(() => number.remove(), 800);
@@ -749,7 +876,10 @@ function updateUpgradesDescription() {
           100
         ).toFixed(1)}% of cps multiplied by NPS`;
       } else if (upgrade.key === "upgrade3") {
-        return `You get ${upgrade.value ** upgrade.owned} per click`;
+        const amountString = isReadableNumbersOn
+          ? readableNumber(upgrade.value ** upgrade.owned)
+          : (upgrade.value ** upgrade.owned).toFixed(0);
+        return `You get ${amountString} per click`;
       } else if (upgrade.key === "upgrade4") {
         return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
           0
@@ -786,6 +916,46 @@ function updateUpgradesDescription() {
   });
 }
 
+function updateVisualDescriptions() {
+  const visualItems = document.querySelectorAll(".visual-note");
+  visualItems.forEach((visualEl, index) => {
+    const visual = Object.values(visuals)[index];
+
+    if (visual.owned) {
+      visualEl.style.filter = visual.selected
+        ? "brightness(1.2)"
+        : "brightness(0.9)";
+    } else if (visual.owned + buyAmount > 1) {
+      visualEl.style.filter = `brightness(0.7)`;
+    }
+
+    visualEl.innerHTML = `
+      <button class="shop-item-button">${visual.name}</button>
+      <p class="shop-item-cost">Cost: ${visual.cost}</p>
+      <p class="shop-item-status">${
+        visual.owned ? (visual.selected ? "Selected" : "Owned") : "Not Owned"
+      }</p>
+    `;
+  });
+}
+
+function updateVisualDisplay() {
+  const selectedVisuals = Object.values(visuals).filter((v) => v.selected);
+  const mainImage = document.getElementById("main-note-img");
+
+  // if (visuals.clearNote.selected) mainButton.innerHTML = "";
+  // if (visuals.smile.selected)
+  //   mainButton.innerHTML = `<img src=${require("url:./images/visual/note/happy.webp")} class="main-note-img"/>`;
+
+  selectedVisuals.forEach((visual) => {
+    if (visual.type === "note") {
+      if (visual.id === "clearNote") mainButton.innerHTML = "";
+      else
+        mainButton.innerHTML = `<img src=${visual.image} class="main-note-img"/>`;
+    }
+  });
+}
+
 function save() {
   try {
     const gameState = {
@@ -802,6 +972,7 @@ function save() {
       achievements,
       unlockedAchievements,
       isReadableNumbersOn,
+      visuals,
     };
     localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
     localStorage.setItem("lastOnline", Date.now());
@@ -850,6 +1021,22 @@ function load() {
           };
         }
       });
+    }
+
+    if (gameState.visuals) {
+      for (const key in gameState.visuals) {
+        if (visuals[key]) {
+          // Merge only mutable state from saved data
+          visuals[key] = {
+            ...visuals[key],
+            owned: gameState.visuals[key].owned ?? visuals[key].owned,
+            selected: gameState.visuals[key].selected ?? visuals[key].selected,
+          };
+        } else {
+          // Add visuals that are in save but not in defaults (in case of removed or future visuals)
+          visuals[key] = gameState.visuals[key];
+        }
+      }
     }
 
     if (gameState.achievements) {
@@ -911,6 +1098,7 @@ function update() {
   updateMoneyText();
   updateWorkerDescriptions();
   updateUpgradesDescription();
+  // updateVisualDescriptions();
 
   checkForAchievements();
   updateCasinoMoneyDisplay();
@@ -1486,6 +1674,8 @@ const readableNumbersToggle = document.getElementById(
   "readable-numbers-toggle"
 );
 const readableNumbersNote = document.getElementById("readable-numbers-note");
+readableNumbersToggle.textContent = isReadableNumbersOn ? "On" : "Off";
+readableNumbersNote.classList.toggle("green", isReadableNumbersOn);
 
 // Handle "Readable Numbers" toggle independently from audio settings
 readableNumbersNote.addEventListener("click", () => {
@@ -1500,9 +1690,9 @@ readableNumbersNote.addEventListener("click", () => {
 ////CASINO LOGIC////
 ///////////////////
 
-// const playButton = document.getElementById("play-game");
-// const gameSelect = document.getElementById("game-select");
-// const betAmountInput = document.getElementById("bet-amount");
+import { renderSlotMachine } from "./slots.js";
+import { renderRoulette } from "./roulette.js";
+
 const gameResultDiv = document.getElementById("game-result");
 const gameSection = document.getElementById("casino-game-section");
 const playButton = document.getElementById("play-game");
@@ -1516,17 +1706,22 @@ let selectedGame = "blackjack"; // Default
 let currentGame = {
   playerCards: [],
   dealerCards: [],
+  rideTheBusCards: [], // To keep track of revealed cards
   bet: 0,
 };
 
 betSlider.addEventListener("input", () => {
   betInput.value = betSlider.value;
-  betAmountDisplay.textContent = betSlider.value;
+  betAmountDisplay.textContent = isReadableNumbersOn
+    ? readableNumber(betSlider.value)
+    : betSlider.value.toFixed(0);
 });
 betInput.addEventListener("input", () => {
   let value = Math.max(1, parseInt(betInput.value) || 1);
   betSlider.value = value;
-  betAmountDisplay.textContent = value;
+  betAmountDisplay.textContent = isReadableNumbersOn
+    ? readableNumber(value)
+    : value.toFixed(0);
 });
 
 // Game selection via sticky notes
@@ -1539,6 +1734,12 @@ gameNotes.forEach((note) => {
 });
 
 const suits = ["hearts", "diamonds", "clubs", "spades"];
+
+function adjustMoney(amount) {
+  money += amount;
+  updateCasinoMoneyDisplay();
+  return money;
+}
 
 function updateCasinoMoneyDisplay() {
   betSlider.max = money;
@@ -1555,14 +1756,18 @@ function drawCard() {
   return { value: cardValue, suit };
 }
 
+function renderCard(card, faceDown = false) {
+  if (faceDown) {
+    return `<img src="${require("url:./images/casino/blackjack/back.png")}" class="card" width="80" />`;
+  } else {
+    let displayValue = card.value === 11 ? "ace" : card.value;
+    const imageName = `${displayValue}_of_${card.suit}`;
+    return `<img src="${getCardSrc(imageName)}" class="card" width="80" />`;
+  }
+}
+
 function renderCards(cards) {
-  return cards
-    .map((card) => {
-      let displayValue = card.value === 11 ? "ace" : card.value;
-      const imageName = `${displayValue}_of_${card.suit}`;
-      return `<img src="${getCardSrc(imageName)}" class="card" width="80" />`;
-    })
-    .join("");
+  return cards.map((card) => renderCard(card)).join("");
 }
 
 function calculateTotal(cards) {
@@ -1583,8 +1788,8 @@ function renderBlackjackGame(end = false, message = "") {
   let controls = "";
   if (!end) {
     controls = `
-      <button id="hit-button" class="blackjack-controls">Hit</button>
-      <button id="stand-button" class="blackjack-controls">Stand</button>
+       <button id="hit-button" class="blackjack-controls">Hit</button>
+       <button id="stand-button" class="blackjack-controls">Stand</button>
     `;
   }
 
@@ -1601,9 +1806,9 @@ function renderBlackjackGame(end = false, message = "") {
           end
             ? renderCards(dealerCards)
             : `
-          <img src=${require("url:./images/casino/blackjack/back.png")} class="card" width="80" />
-          <img src=${require("url:./images/casino/blackjack/back.png")} class="card back" width="80" />
-        `
+<img src="${require("url:./images/casino/blackjack/back.png")}" class="card" width="80" />
+<img src="${require("url:./images/casino/blackjack/back.png")}" class="card back" width="80" />
+`
         }
       </div>
     </div>
@@ -1665,6 +1870,160 @@ function playerStands() {
   renderBlackjackGame(true, resultText);
 }
 
+function renderRideTheBus(stage = 1, previousCard = null, multiplier = 1) {
+  const stageTitles = [
+    "Red or Black",
+    "Higher or Lower",
+    "In Between or Outside",
+    "Guess the Suit",
+  ];
+  const stageMultipliers = [1, 2, 3, 20];
+  const currentMultiplier = stageMultipliers[stage - 1];
+  const nextMultiplier = stageMultipliers[stage] ?? currentMultiplier;
+
+  // Render 4 card slots - face-up for revealed cards, face-down otherwise
+  let displayedCards = [];
+  for (let i = 0; i < 4; i++) {
+    if (i < currentGame.rideTheBusCards.length) {
+      displayedCards.push(renderCard(currentGame.rideTheBusCards[i]));
+    } else {
+      displayedCards.push(renderCard({}, true)); // face-down
+    }
+  }
+
+  gameSection.innerHTML = `
+    <h2>Ride the Bus</h2>
+    <p>Stage ${stage}: ${stageTitles[stage - 1]}</p>
+    <div class="cards">${displayedCards.join("")}</div>
+    <div class="ride-the-bus-options">
+      ${renderStageOptions(stage)}
+    </div>
+    <button id="walk-away">Walk Away with x${multiplier}</button>
+  `;
+
+  document.getElementById("walk-away").addEventListener("click", () => {
+    console.log(currentGame.bet);
+    console.log(stage);
+    const payout = stage === 1 ? currentGame.bet : currentGame.bet * multiplier;
+    money -= currentGame.bet;
+    money += payout;
+    updateCasinoMoneyDisplay();
+    endRideTheBus(
+      `You walked away with ${
+        stage === 1 ? "your bet" : `x${multiplier}`
+      } winnings!`
+    );
+  });
+
+  setupStageHandlers(stage, multiplier, nextMultiplier);
+}
+
+function renderStageOptions(stage) {
+  switch (stage) {
+    case 1:
+      return `<button data-choice="red">Red</button><button data-choice="black">Black</button>`;
+    case 2:
+      return `<button data-choice="higher">Higher</button><button data-choice="lower">Lower</button>`;
+    case 3:
+      return `<button data-choice="inbetween">In Between</button><button data-choice="outside">Outside</button>`;
+    case 4:
+      return suits
+        .map((s) => `<button data-choice="${s}">${capitalize(s)}</button>`)
+        .join("");
+  }
+}
+
+function setupStageHandlers(stage, multiplier, nextMultiplier) {
+  document
+    .querySelectorAll(".ride-the-bus-options button")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        const choice = button.dataset.choice;
+        const nextCard = drawCard();
+        currentGame.rideTheBusCards.push(nextCard);
+
+        const win = evaluateChoice(
+          stage,
+          choice,
+          currentGame.rideTheBusCards[stage - 2],
+          nextCard
+        );
+
+        if (win) {
+          if (stage < 4) {
+            renderRideTheBus(stage + 1, nextCard, nextMultiplier);
+          } else {
+            money += currentGame.bet * nextMultiplier;
+            updateCasinoMoneyDisplay();
+            endRideTheBus(`You won x${nextMultiplier} by guessing correctly!`);
+          }
+        } else {
+          money -= currentGame.bet;
+          updateCasinoMoneyDisplay();
+
+          // Reveal the card before ending
+          renderRideTheBus(stage + 1); // Will show the revealed card
+          setTimeout(() => {
+            endRideTheBus(`You lost!`);
+          }, 1500); // Small delay to show the card
+        }
+      });
+    });
+}
+
+function evaluateChoice(stage, choice, currentCard, nextCard) {
+  //Plan to remove currentCard it is useless.
+  currentCard = currentGame.rideTheBusCards[stage - 2];
+  switch (stage) {
+    case 1:
+      return (
+        (choice === "red" &&
+          (nextCard.suit === "hearts" || nextCard.suit === "diamonds")) ||
+        (choice === "black" &&
+          (nextCard.suit === "clubs" || nextCard.suit === "spades"))
+      );
+    case 2:
+      return (
+        (choice === "higher" &&
+          nextCard.value > currentGame.rideTheBusCards[0].value) ||
+        (choice === "lower" &&
+          nextCard.value < currentGame.rideTheBusCards[0].value)
+      );
+    case 3:
+      const values = [
+        currentGame.rideTheBusCards[0].value,
+        currentGame.rideTheBusCards[1].value,
+      ];
+      return (
+        (choice === "inbetween" &&
+          nextCard.value > Math.min(...values) &&
+          nextCard.value < Math.max(...values)) ||
+        (choice === "outside" &&
+          (nextCard.value < Math.min(...values) ||
+            nextCard.value > Math.max(...values)))
+      );
+
+    case 4:
+      return choice === nextCard.suit;
+  }
+  return false;
+}
+
+function endRideTheBus(message) {
+  gameSection.innerHTML = `
+     <h2>Ride the Bus</h2>
+     <p>${message}</p>
+     <p>New Balance: ${
+       isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)
+     }</p>
+     <button id="return-button">Return to Game Selection</button>
+  `;
+
+  document.getElementById("return-button").addEventListener("click", () => {
+    mainContainer.style.transform = "translate(100%, 0)";
+  });
+}
+
 playButton.addEventListener("click", () => {
   const bet = parseInt(betSlider.value);
 
@@ -1703,21 +2062,48 @@ playButton.addEventListener("click", () => {
       bet,
     };
     renderBlackjackGame();
+  } else if (selectedGame === "ride-the-bus") {
+    currentGame = { bet, rideTheBusCards: [] }; // Initialize with one card
+    renderRideTheBus(1, currentGame.rideTheBusCards[0]); // Start at stage 1 with the first card
+  } else if (selectedGame === "slots") {
+    gameSection.classList.add("slots-theme");
+    renderSlotMachine(
+      bet,
+      updateCasinoMoneyDisplay,
+      () => {
+        mainContainer.style.transform = "translate(100%, 0)";
+      },
+      (amount) => {
+        money += amount;
+      }
+    );
+  } else if (selectedGame === "roulette") {
+    gameSection.classList.add("roulette-theme");
+    renderRoulette(
+      bet,
+      updateCasinoMoneyDisplay,
+      () => {
+        mainContainer.style.transform = "translate(100%, 0)";
+      },
+      (amount) => {
+        money += amount;
+      }
+    );
   } else {
     const result = Math.random() < 0.5 ? "win" : "lose";
     money = result === "win" ? money + bet : money - bet;
     updateCasinoMoneyDisplay();
 
     gameSection.innerHTML = `
-      <h2>${selectedGame.replace(/-/g, " ")}</h2>
-      <p>You placed a ${
-        isReadableNumbersOn ? readableNumber(bet) : bet.toFixed(0)
-      } note bet. You ${result}!</p>
-      <p>New Balance: ${
-        isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)
-      } notes</p>
-      <button id="return-button">Return to Game Selection</button>
-    `;
+  <h2>${selectedGame.replace(/-/g, " ")}</h2>
+  <p>You placed a ${
+    isReadableNumbersOn ? readableNumber(bet) : bet.toFixed(0)
+  } note bet. You ${result}!</p>
+  <p>New Balance: ${
+    isReadableNumbersOn ? readableNumber(money) : money.toFixed(0)
+  } notes</p>
+  <button id="return-button">Return to Game Selection</button>
+`;
 
     setTimeout(() => {
       document.getElementById("return-button").addEventListener("click", () => {

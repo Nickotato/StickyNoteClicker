@@ -359,8 +359,11 @@ input[type="range"]::-moz-range-thumb:hover {
   position: absolute;
   top: 5vh;
   left: 5vh;
-  display: flex;
+  /* display: flex; */
   gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 20px;
 }
 
 .move-screen-buttons {
@@ -386,6 +389,11 @@ input[type="range"]::-moz-range-thumb:hover {
 #main-stickynote:active {
   transform: scale(1);
   filter: brightness(0.95);
+}
+
+.main-note-img {
+  max-width: 80%;
+  max-height: 80%;
 }
 
 .left-section {
@@ -736,15 +744,6 @@ input[type="range"]::-moz-range-thumb:hover {
   transform: rotate(2deg);
 }
 
-/* #game-result {
-  background: #ffccbc;
-  padding: 0.5rem 1rem;
-  border: 2px solid #ff8a65;
-  border-radius: 10px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-  transform: rotate(-1deg);
-  font-weight: bold;
-} */
 
 .blackjack-hand {
   margin-bottom: 1rem;
@@ -785,7 +784,6 @@ input[type="range"]::-moz-range-thumb:hover {
 .blackjack-theme {
   background: radial-gradient(circle at center, #35654d 0%, #1e3c2f 100%);
   border: 5px solid #2ecc71;
-  border-radius: 20px;
   padding: 20px 40px;
   text-align: center;
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0,0,0,0.5);
@@ -902,16 +900,85 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Ride the Bus Theme */
 .ride-the-bus-theme {
-  background-color: #8bc34a;
-  color: white;
-  font-family: 'Times New Roman', serif;
-  border: 2px solid #009688;
+  background: #fef9e7; /* Light paper tone */
+  color: #333;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  border: 4px solid #fdd835;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 3px 3px 6px rgba(0,0,0,0.2);
+  /* transform: rotate(-1deg); */
+  box-sizing: border-box;
 }
+
+.ride-the-bus-theme .cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+
+.ride-the-bus-theme .cards img.card {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.ride-the-bus-theme .cards img.card:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+
+.ride-the-bus-theme .ride-the-bus-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+
+.ride-the-bus-theme button {
+  background: #ffecb3;
+  color: #5d4037;
+  border: 2px solid #fbc02d;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  transform: rotate(-1deg);
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.ride-the-bus-theme button:hover {
+  background: #fff176;
+  transform: rotate(0deg) scale(1.05);
+}
+
 
 .ride-the-bus-theme h2 {
-  color: #009688;
+  background: #fff176;
+  color: #5d4037;
+  padding: 1rem 2rem;
+  font-size: 2.5rem;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+  border: 2px solid #fbc02d;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 2rem;
 }
 
+.ride-the-bus-theme p {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
 
 .game-selection {
   display: flex;
@@ -943,12 +1010,53 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 #bet-amount-slider {
-  width: 80%;
+  width: 40%;
 }
 
 #bet-amount-input {
   width: 80px;
   margin-left: 1rem;
+}
+
+
+/* styles.css */
+.slot-reels {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.reel {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #333;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 80px;
+  background: #fff;
+}
+
+.roulette-wheel-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.roulette-wheel {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-image: conic-gradient(
+    red 0deg 9.73deg,
+    black 9.73deg 19.46deg,
+    red 19.46deg 29.19deg,
+    black 29.19deg 38.92deg,
+    /* repeat to 360 degrees */
+    green 351.27deg 360deg
+  );
+  border: 5px solid #222;
 }
 
 
@@ -1202,6 +1310,7 @@ input[type="range"]::-moz-range-thumb:hover {
     /* flex-direction: column; */
     top: 2vh;
     left: 2vh;
+    
   }
   .move-screen-buttons.stickynote {
     margin-bottom: 10px;
