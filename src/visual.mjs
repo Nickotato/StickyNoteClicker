@@ -26,4 +26,22 @@ export const defaultVisuals = {
     selected: false,
     type: "note",
   },
+  saxophone: {
+    id: "saxophone",
+    name: "Saxophone",
+    cost: 10,
+    image: require("url:./images/visual/note/saxophone.webp"),
+    owned: false,
+    selected: false,
+    type: "note",
+  },
+  trombone: {
+    id: "trombone",
+    name: "Trombone",
+    cost: 10,
+    image: require("url:./images/visual/note/trombone.png"),
+    owned: false,
+    selected: false,
+    type: "note",
+  },
 };

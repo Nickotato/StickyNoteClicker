@@ -176,6 +176,8 @@ let totalRate = 0;
 let unlockedAchievements = 0;
 let totalAchievements = achievements.length;
 
+let currentSaveSlot = "save1";
+
 let planeMultiplier = 0;
 let isReadableNumbersOn = false;
 let buyAmount = 1;
@@ -571,8 +573,28 @@ bulkBuySection.addEventListener("click", (e) => {
   }
 });
 
-function initGame() {
-  if (localStorage.getItem("stickyNotesGame") != null) load();
+document.getElementById("save1-note").addEventListener("click", () => {
+  // load("save1");
+  // createUpgradeElements();
+
+  initGame("save1");
+});
+document.getElementById("save2-note").addEventListener("click", () => {
+  // load("save2");
+  // createUpgradeElements();
+  initGame("save2");
+});
+
+function initGame(saveSlot = "save1") {
+  currentSaveSlot = saveSlot;
+
+  const saveKey = `stickyNotesGame_${saveSlot}`;
+  if (localStorage.getItem(saveKey) != null) {
+    load(saveSlot); // Load existing save
+  } else {
+    newGame(saveSlot, false); // No confirm if it's first-time init
+  }
+
   createWorkerElements();
   createUpgradeElements();
   createVisualElements();
@@ -581,7 +603,9 @@ function initGame() {
   updateRateDisplays();
   updateAchievementStats();
 
-  document.getElementById("delete-save").addEventListener("click", deleteSave);
+  document.getElementById("delete-save").addEventListener("click", () => {
+    newGame(currentSaveSlot); // Confirmed reset on delete
+  });
 }
 
 mainButton.addEventListener("click", (event) => {
@@ -974,108 +998,116 @@ function save() {
       isReadableNumbersOn,
       visuals,
     };
-    localStorage.setItem("stickyNotesGame", JSON.stringify(gameState));
-    localStorage.setItem("lastOnline", Date.now());
+    localStorage.setItem(
+      `stickyNotesGame_${currentSaveSlot}`,
+      JSON.stringify(gameState)
+    );
+    localStorage.setItem(`lastOnline_${currentSaveSlot}`, Date.now());
   } catch (e) {
     console.error("Failed to save:", e);
   }
 }
 
-function load() {
-  const savedGame = localStorage.getItem("stickyNotesGame");
-  if (savedGame) {
-    const gameState = JSON.parse(savedGame);
-    money = gameState.money || 0;
+function load(saveSlot = "save1") {
+  const savedGame = localStorage.getItem(`stickyNotesGame_${saveSlot}`);
+  if (!savedGame) {
+    console.warn(`No save data found for ${saveSlot}. Starting new game`);
+    newGame(saveSlot, false); // skips confirmation
+    return;
+  }
 
-    if (gameState.workers) {
-      Object.keys(defaultWorkers).forEach((key) => {
-        if (gameState.workers[key]) {
-          const owned = gameState.workers[key].owned || 0;
-          const baseCost = defaultWorkers[key].cost;
-          const newCost = Math.floor(baseCost * Math.pow(1.15, owned));
+  const gameState = JSON.parse(savedGame);
+  money = gameState.money || 0;
 
-          workers[key] = {
-            ...defaultWorkers[key],
-            owned: owned,
-            visible: gameState.workers[key].visible || false,
-            cost: newCost,
-            listenerAttached: false,
-          };
-        }
-      });
-    }
+  if (gameState.workers) {
+    Object.keys(defaultWorkers).forEach((key) => {
+      if (gameState.workers[key]) {
+        const owned = gameState.workers[key].owned || 0;
+        const baseCost = defaultWorkers[key].cost;
+        const newCost = Math.floor(baseCost * Math.pow(1.15, owned));
 
-    if (gameState.upgrades) {
-      Object.keys(defaultUpgrades).forEach((key) => {
-        if (gameState.upgrades[key]) {
-          const owned = gameState.upgrades[key].owned || 0;
-          const baseCost = defaultUpgrades[key].cost;
-          const newCost = Math.floor(
-            baseCost * Math.pow(findUpgradeCost(key), owned)
-          );
-
-          upgrades[key] = {
-            ...defaultUpgrades[key],
-            owned: owned,
-            cost: newCost,
-          };
-        }
-      });
-    }
-
-    if (gameState.visuals) {
-      for (const key in gameState.visuals) {
-        if (visuals[key]) {
-          // Merge only mutable state from saved data
-          visuals[key] = {
-            ...visuals[key],
-            owned: gameState.visuals[key].owned ?? visuals[key].owned,
-            selected: gameState.visuals[key].selected ?? visuals[key].selected,
-          };
-        } else {
-          // Add visuals that are in save but not in defaults (in case of removed or future visuals)
-          visuals[key] = gameState.visuals[key];
-        }
-      }
-    }
-
-    if (gameState.achievements) {
-      const savedAchievementsMap = Object.fromEntries(
-        (gameState.achievements || []).map((a) => [a.id, a])
-      );
-
-      achievements = defaultAchievements.map((ach) => {
-        const saved = savedAchievementsMap[ach.id];
-        return {
-          ...ach,
-          unlocked: saved ? saved.unlocked : ach.unlocked,
+        workers[key] = {
+          ...defaultWorkers[key],
+          owned: owned,
+          visible: gameState.workers[key].visible || false,
+          cost: newCost,
+          listenerAttached: false,
         };
-      });
+      }
+    });
+  }
 
-      for (let i = 0; i < achievements.length; i++) {
-        if (achievements[i].unlocked) {
-          addAchievementNote(achievements[i]);
-        }
+  if (gameState.upgrades) {
+    Object.keys(defaultUpgrades).forEach((key) => {
+      if (gameState.upgrades[key]) {
+        const owned = gameState.upgrades[key].owned || 0;
+        const baseCost = defaultUpgrades[key].cost;
+        const newCost = Math.floor(
+          baseCost * Math.pow(findUpgradeCost(key), owned)
+        );
+
+        upgrades[key] = {
+          ...defaultUpgrades[key],
+          owned: owned,
+          cost: newCost,
+        };
+      }
+    });
+  }
+
+  if (gameState.visuals) {
+    for (const key in gameState.visuals) {
+      if (visuals[key]) {
+        visuals[key] = {
+          ...visuals[key],
+          owned: gameState.visuals[key].owned ?? visuals[key].owned,
+          selected: gameState.visuals[key].selected ?? visuals[key].selected,
+        };
+      } else {
+        visuals[key] = gameState.visuals[key];
       }
     }
+  }
 
-    totalClicks = gameState.totalClicks || 0;
-    totalNotes = gameState.totalNotes || 0;
-    unlockedAchievements = gameState.unlockedAchievements || 0;
-    clickTimestamps = gameState.clickTimestamps || [];
-    clickBonus = gameState.clickBonus || 1;
-    upgrade1Bonus = gameState.upgrade1Bonus || 0;
-    upgrade2Bonus = gameState.upgrade2Bonus || 0;
-    totalRate = gameState.totalRate || 0;
-    isReadableNumbersOn = gameState.isReadableNumbersOn || false;
+  if (gameState.achievements) {
+    const savedAchievementsMap = Object.fromEntries(
+      (gameState.achievements || []).map((a) => [a.id, a])
+    );
 
-    if (upgrades.upgrade4.owned > 0) {
-      const lastOnline = parseInt(
-        localStorage.getItem("lastOnline") || Date.now()
-      );
-      const now = Date.now();
-      const secondsOffline = Math.floor((now - lastOnline) / 1000);
-      if (secondsOffline <= 60) return;
+    achievements = defaultAchievements.map((ach) => {
+      const saved = savedAchievementsMap[ach.id];
+      return {
+        ...ach,
+        unlocked: saved ? saved.unlocked : ach.unlocked,
+      };
+    });
+
+    for (let i = 0; i < achievements.length; i++) {
+      if (achievements[i].unlocked) {
+        addAchievementNote(achievements[i]);
+      }
+    }
+  }
+
+  totalClicks = gameState.totalClicks || 0;
+  totalNotes = gameState.totalNotes || 0;
+  unlockedAchievements = gameState.unlockedAchievements || 0;
+  clickTimestamps = gameState.clickTimestamps || [];
+  clickBonus = gameState.clickBonus || 1;
+  upgrade1Bonus = gameState.upgrade1Bonus || 0;
+  upgrade2Bonus = gameState.upgrade2Bonus || 0;
+  totalRate = gameState.totalRate || 0;
+  isReadableNumbersOn = gameState.isReadableNumbersOn || false;
+
+  // Handle offline gains with slot-specific lastOnline
+  if (upgrades.upgrade4.owned > 0) {
+    const lastOnlineKey = `lastOnline_${saveSlot}`;
+    const lastOnline = parseInt(
+      localStorage.getItem(lastOnlineKey) || Date.now()
+    );
+    const now = Date.now();
+    const secondsOffline = Math.floor((now - lastOnline) / 1000);
+    if (secondsOffline > 60) {
       const moneyPerSecond = calculateMoneyPerSecond("initial");
       const offlineMultiplier =
         upgrades.upgrade4.owned * upgrades.upgrade4.value;
@@ -1089,6 +1121,10 @@ function load() {
       );
     }
   }
+
+  // Optional: store current slot for global access
+  currentSaveSlot = saveSlot;
+  // updateSaveSlotUI(saveSlot);
 }
 
 function update() {
@@ -1123,29 +1159,74 @@ setInterval(update, 100);
 setInterval(updateCPS, 100);
 initGame();
 
-function deleteSave() {
+function newGame(saveSlot = "save1", confirmReset = true) {
   if (
-    confirm("Are you sure you want to delete your save? This cannot be undone!")
+    confirmReset &&
+    !confirm(
+      "Are you sure you want to start a new game? This will delete your current progress!"
+    )
   ) {
-    localStorage.removeItem("stickyNotesGame");
-    money = 0;
-    totalClicks = 0;
-    totalNotes = 0;
-    clickTimestamps = [];
-    clickBonus = 1;
-    upgrade1Bonus = 0;
-    upgrade2Bonus = 0;
-    totalRate = 0;
-    unlockedAchievements = 0;
-    workers = { ...defaultWorkers };
-    upgrades = { ...defaultUpgrades };
-    achievements = [...defaultAchievements];
-    updateMoneyText();
-    updateMoneyPerSecondText();
-    createWorkerElements();
-    createUpgradeElements();
-    alert("Save data has been deleted. The game has been reset.");
+    return;
   }
+
+  // Delete save data for the selected slot
+  localStorage.removeItem(`stickyNotesGame_${saveSlot}`);
+  localStorage.removeItem(`lastOnline_${saveSlot}`);
+
+  // Reset game state to default values
+  money = 0;
+  totalClicks = 0;
+  totalNotes = 0;
+  clickTimestamps = [];
+  clickBonus = 1;
+  upgrade1Bonus = 0;
+  upgrade2Bonus = 0;
+  totalRate = 0;
+  unlockedAchievements = 0;
+  isReadableNumbersOn = false;
+
+  workers = { ...defaultWorkers };
+  Object.keys(workers).forEach((key) => {
+    workers[key] = {
+      ...workers[key],
+      owned: 0,
+      visible: false,
+      listenerAttached: false,
+    };
+  });
+
+  upgrades = { ...defaultUpgrades };
+  Object.keys(upgrades).forEach((key) => {
+    upgrades[key] = {
+      ...upgrades[key],
+      owned: 0,
+      cost: upgrades[key].cost,
+    };
+  });
+
+  visuals = { ...defaultVisuals }; // if applicable
+  Object.keys(visuals).forEach((key) => {
+    visuals[key] = {
+      ...visuals[key],
+      owned: false,
+      selected: false,
+    };
+  });
+
+  achievements = [...defaultAchievements];
+  achievements.forEach((ach) => (ach.unlocked = false));
+
+  currentSaveSlot = saveSlot;
+
+  // Reinitialize UI
+  updateMoneyText();
+  updateMoneyPerSecondText();
+  createWorkerElements();
+  createUpgradeElements();
+  updateAchievementDisplay(); // if applicable
+  // updateSaveSlotUI(saveSlot); // if you use this
+
+  alert("New game started!");
 }
 
 ////////////////////
