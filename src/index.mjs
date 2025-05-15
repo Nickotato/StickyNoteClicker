@@ -585,6 +585,13 @@ document.getElementById("save2-note").addEventListener("click", () => {
   initGame("save2");
 });
 
+function updateSaveSlotUI(selectedSlot) {
+  ["save1", "save2"].forEach((slot) => {
+    document.getElementById(`${slot}-toggle`).innerText =
+      slot === selectedSlot ? "Selected" : "Not Selected";
+  });
+}
+
 function initGame(saveSlot = "save1") {
   currentSaveSlot = saveSlot;
 
@@ -1223,7 +1230,7 @@ function newGame(saveSlot = "save1", confirmReset = true) {
   updateMoneyPerSecondText();
   createWorkerElements();
   createUpgradeElements();
-  updateAchievementDisplay(); // if applicable
+  // checkForAchievements();
   // updateSaveSlotUI(saveSlot); // if you use this
 
   alert("New game started!");
