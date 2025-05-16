@@ -7,7 +7,7 @@ export const defaultWorkers = {
     name: "Loose Change",
     description: "Collect coins from couch cushions to buy more notes.",
     visible: false,
-    listenerAttached: false,
+    
   },
   worker2: {
     cost: 100,
@@ -17,7 +17,7 @@ export const defaultWorkers = {
     name: "Buy Friend",
     description: "Buy a real friend to buy you notes.",
     visible: false,
-    listenerAttached: false,
+    
   },
   worker3: {
     cost: 500,
@@ -27,7 +27,7 @@ export const defaultWorkers = {
     name: "Pen",
     description: 'Make "important" notes.',
     visible: false,
-    listenerAttached: false,
+    
   },
   worker4: {
     cost: 1000,
@@ -37,7 +37,7 @@ export const defaultWorkers = {
     name: "Part Time Job",
     description: "I can't wait to start working.",
     visible: false,
-    listenerAttached: false,
+    
   },
   worker5: {
     cost: 2500,
@@ -47,7 +47,7 @@ export const defaultWorkers = {
     name: "Robbery",
     description: "I hate working.",
     visible: false,
-    listenerAttached: false,
+    
   },
   worker6: {
     cost: 5000,
@@ -57,7 +57,7 @@ export const defaultWorkers = {
     name: "Numismatics",
     description: "Collects coins. Doesn’t spend them. Slight issue.",
     visible: false,
-    listenerAttached: false,
+    
   },
   worker7: {
     cost: 9000,
@@ -67,7 +67,7 @@ export const defaultWorkers = {
     name: "Coin Hoarder",
     description: "An obsession with coin collections leads to note production.",
     visible: false,
-    listenerAttached: false,
+    
   },
   onlineShopping: {
     cost: 10000,
@@ -77,7 +77,7 @@ export const defaultWorkers = {
     name: "Online Shopping",
     description: "You only get scammed, sometimes.",
     visible: false,
-    listenerAttached: false,
+    
   },
   coffeeIntern: {
     cost: 25000,
@@ -87,7 +87,7 @@ export const defaultWorkers = {
     name: "Coffee Intern",
     description: "Energizes the office and occasionally makes a decent latte.",
     visible: false,
-    listenerAttached: false,
+    
   },
   printerGoblin: {
     cost: 100000,
@@ -98,7 +98,7 @@ export const defaultWorkers = {
     description:
       "Lurks near the copier and prints sticky notes at lightning speed.",
     visible: false,
-    listenerAttached: false,
+    
   },
   basementInterns: {
     cost: 280000,
@@ -109,7 +109,7 @@ export const defaultWorkers = {
     description:
       "Unpaid and overworked, they generate notes in exchange for 'experience'.",
     visible: false,
-    listenerAttached: false,
+    
   },
   mandatoryVolunteer: {
     cost: 800000,
@@ -119,7 +119,7 @@ export const defaultWorkers = {
     name: "Mandatory Volunteer",
     description: "They want to be here :).",
     visible: false,
-    listenerAttached: false,
+    
   },
   hundredHumans: {
     cost: 2.2e6,
@@ -129,7 +129,7 @@ export const defaultWorkers = {
     name: "100 Humans",
     description: "The only thing that can beat a silverback gorilla.",
     visible: false,
-    listenerAttached: false,
+    
   },
   internetAdBot: {
     cost: 6.2e6,
@@ -139,7 +139,7 @@ export const defaultWorkers = {
     name: "Internet Ad Bot",
     description: "Runs ads for sticky notes you didn’t know you needed.",
     visible: false,
-    listenerAttached: false,
+    
   },
   automationScript: {
     cost: 17.5e6,
@@ -149,7 +149,7 @@ export const defaultWorkers = {
     name: "Automation Script",
     description: "A single script replaces 10 interns. No coffee needed.",
     visible: false,
-    listenerAttached: false,
+    
   },
   noteFactory: {
     cost: 49e6,
@@ -159,7 +159,7 @@ export const defaultWorkers = {
     name: "Note Factory",
     description: "Industrial-grade note vomit. Glorious.",
     visible: false,
-    listenerAttached: false,
+    
   },
   paperPusherPro: {
     cost: 135e6,
@@ -169,7 +169,7 @@ export const defaultWorkers = {
     name: "Paper Pusher Pro",
     description: "Elevated from intern to professional note stacker.",
     visible: false,
-    listenerAttached: false,
+    
   },
   humanResources: {
     cost: 370e6,
@@ -179,7 +179,7 @@ export const defaultWorkers = {
     name: "Human Resources",
     description: "Perhaps allowing hats on Friday will cure their depression?",
     visible: false,
-    listenerAttached: false,
+    
   },
   corporateDroneSwarm: {
     cost: 1e9,
@@ -190,7 +190,7 @@ export const defaultWorkers = {
     description:
       "A legion of highly caffeinated office workers producing notes in unison.",
     visible: false,
-    listenerAttached: false,
+    
   },
   ceoOverlord: {
     cost: 2.8e9,
@@ -201,7 +201,7 @@ export const defaultWorkers = {
     description:
       "Does nothing, yet everything gets done. Yells 'synergy' a lot.",
     visible: false,
-    listenerAttached: false,
+    
   },
   aiNoteGenerator: {
     cost: 7.5e9,
@@ -212,7 +212,7 @@ export const defaultWorkers = {
     description:
       "Hallucinates helpful notes after reading the internet for 3 minutes.",
     visible: false,
-    listenerAttached: false,
+    
   },
   thirdWorldCountry: {
     cost: 2.1e10,
@@ -222,7 +222,7 @@ export const defaultWorkers = {
     name: "Third World Country",
     description: "I wouldn't say free, more like, under new management.",
     visible: false,
-    listenerAttached: false,
+    
   },
   warCrimes: {
     cost: 5.8e10,
@@ -233,7 +233,7 @@ export const defaultWorkers = {
     description:
       'Commit terrible acts, like calling sticky notes "post-it notes".',
     visible: false,
-    listenerAttached: false,
+    
   },
   lunarNoteMiners: {
     cost: 1.6e11,
@@ -243,7 +243,7 @@ export const defaultWorkers = {
     name: "Lunar Note Miners",
     description: "Specialized team mining for rare note isotopes on the Moon.",
     visible: false,
-    listenerAttached: false,
+    
   },
   quantumTaskScheduler: {
     cost: 4.5e11,
@@ -254,7 +254,7 @@ export const defaultWorkers = {
     description:
       "Performs tasks before you even think of them. Terrifyingly efficient.",
     visible: false,
-    listenerAttached: false,
+    
   },
   martianColonyScribes: {
     cost: 1.2e12,
@@ -265,7 +265,7 @@ export const defaultWorkers = {
     description:
       "The first Martian settlers are surprisingly adept at note creation.",
     visible: false,
-    listenerAttached: false,
+    
   },
   quantumStickyLab: {
     cost: 3.3e12,
@@ -276,7 +276,7 @@ export const defaultWorkers = {
     description:
       "Harvests sticky notes from infinite timelines. Some are cursed.",
     visible: false,
-    listenerAttached: false,
+    
   },
   asteroidBeltPaperRoute: {
     cost: 9.1e12,
@@ -287,7 +287,7 @@ export const defaultWorkers = {
     description:
       "Delivering bulk sticky notes to various asteroid outposts. High risk, high reward.",
     visible: false,
-    listenerAttached: false,
+    
   },
   interstellarNoteTraders: {
     cost: 2.5e13,
@@ -298,7 +298,7 @@ export const defaultWorkers = {
     description:
       "Galactic merchants specializing in the exotic note markets of distant star systems.",
     visible: false,
-    listenerAttached: false,
+    
   },
   multiverseMerger: {
     cost: 6.8e13,
@@ -309,7 +309,7 @@ export const defaultWorkers = {
     description:
       "Absorbs entire companies across realities. Legally questionable.",
     visible: false,
-    listenerAttached: false,
+    
   },
   parallelWorldEmpire: {
     cost: 1.8e14,
@@ -319,7 +319,7 @@ export const defaultWorkers = {
     name: "Parallel World Empire",
     description: "Gathers sticky notes from countless universes.",
     visible: false,
-    listenerAttached: false,
+    
   },
   galacticNoteForge: {
     cost: 5e14,
@@ -330,7 +330,7 @@ export const defaultWorkers = {
     description:
       "A Dyson sphere powered factory dedicated to forging notes from raw stellar material.",
     visible: false,
-    listenerAttached: false,
+    
   },
   stickyNote: {
     cost: 1e16,
@@ -340,6 +340,6 @@ export const defaultWorkers = {
     name: "The Sticky Note",
     description: "The One and Only",
     visible: false,
-    listenerAttached: false,
+    
   },
 };
