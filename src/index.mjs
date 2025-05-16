@@ -359,10 +359,6 @@ function updateVisualDisplay() {
   const selectedVisuals = Object.values(game.visuals).filter((v) => v.selected);
   const mainImage = document.getElementById("main-note-img");
 
-  // if (visuals.clearNote.selected) mainButton.innerHTML = "";
-  // if (visuals.smile.selected)
-  //   mainButton.innerHTML = `<img src=${require("url:./images/visual/note/happy.webp")} class="main-note-img"/>`;
-
   selectedVisuals.forEach((visual) => {
     if (visual.type === "note") {
       if (visual.id === "clearNote") mainButton.innerHTML = "";
@@ -386,7 +382,7 @@ function initGame(saveSlot = "save1") {
   updateRateDisplays();
   updateAchievementStats(game);
   updateSaveSlotUI(saveSlot);
-  initializeShop(game);
+  initializeShop(game, updateVisualDisplay);
   moveShopSectionIfMobile();
   setUpSettings(game);
   initializeCasino(game, mainContainer);

@@ -2,16 +2,15 @@ import { soundEffects, playSoundEffects } from "./audio.mjs";
 import {
   readableNumber,
   getTotalCost,
-  getCardSrc,
-  capitalize,
-  getRandomStickyNoteColor,findUpgradeCost
- } from "./utils.mjs";
+  getRandomStickyNoteColor,
+  findUpgradeCost,
+} from "./utils.mjs";
 
 let buyAmount = 1;
 
-export function initializeShop(game) {
+export function initializeShop(game, updateVisualDisplay) {
   const shopSection = document.querySelector(".shop-section");
-  shopSection.innerHTML = ""
+  shopSection.innerHTML = "";
 
   const tabsContainer = document.createElement("div");
   tabsContainer.className = "tabs-container";
@@ -145,24 +144,24 @@ export function initializeShop(game) {
 
   createWorkerElements(game, workerContent);
   createUpgradeElements(game, upgradeContent);
-  createVisualElements(game, visualContent);
+  createVisualElements(game, visualContent, updateVisualDisplay);
 }
 
 export function moveShopSectionIfMobile() {
-    const shopSection = document.querySelector(".shop-section");
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-  
-    if (
-      isMobile &&
-      shopSection &&
-      shopSection.parentElement.id === "main-section"
-    ) {
-      document.body.insertBefore(
-        shopSection,
-        document.getElementById("main-container")
-      );
-    }
+  const shopSection = document.querySelector(".shop-section");
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (
+    isMobile &&
+    shopSection &&
+    shopSection.parentElement.id === "main-section"
+  ) {
+    document.body.insertBefore(
+      shopSection,
+      document.getElementById("main-container")
+    );
   }
+}
 
 function toggleShopSection(tab, othertab1, othertab2, shopSection) {
   if (tab.classList.contains("active")) {
@@ -322,47 +321,50 @@ function updateWorkerDescriptions(game) {
 }
 
 function updateUpgradesDescription(game) {
-    const upgradeItems = document.querySelectorAll(".upgrades-note");
-    upgradeItems.forEach((upgradeEl, index) => {
-      const upgrade = Object.values(game.upgrades)[index];
-  
-      const totalCost = getTotalCost(
-        upgrade.cost,
-        findUpgradeCost(upgrade.key),
-        buyAmount
-      );
-  
-      if (
-        game.money < totalCost ||
-        upgrade.owned + buyAmount > upgrade.max
-      ) {
-        upgradeEl.style.filter = "brightness(0.5)";
-      } else {
-        upgradeEl.style.filter = "";
+  const upgradeItems = document.querySelectorAll(".upgrades-note");
+  upgradeItems.forEach((upgradeEl, index) => {
+    const upgrade = Object.values(game.upgrades)[index];
+
+    const totalCost = getTotalCost(
+      upgrade.cost,
+      findUpgradeCost(upgrade.key),
+      buyAmount
+    );
+
+    if (game.money < totalCost || upgrade.owned + buyAmount > upgrade.max) {
+      upgradeEl.style.filter = "brightness(0.5)";
+    } else {
+      upgradeEl.style.filter = "";
+    }
+
+    function upgradeAmountText() {
+      if (upgrade.key === "upgrade1") {
+        return `extra ${(upgrade.owned * upgrade.value * 100).toFixed(
+          0
+        )}% of NPS`;
+      } else if (upgrade.key === "upgrade2") {
+        return `${(upgrade.value * upgrade.owned * 100).toFixed(
+          1
+        )}% of cps multiplied by NPS`;
+      } else if (upgrade.key === "upgrade3") {
+        const amountString = game.isReadableNumbersOn
+          ? readableNumber(upgrade.value ** upgrade.owned)
+          : (upgrade.value ** upgrade.owned).toFixed(0);
+        return `You get ${amountString} per click`;
+      } else if (upgrade.key === "upgrade4") {
+        return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
+          0
+        )}% of notes earned offline`;
+      } else if (upgrade.key === "upgrade5") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
+      } else if (upgrade.key === "upgrade6") {
+        return upgrade.owned === 1 ? `You have access` : `Access Denied`;
+      } else if (upgrade.key === "upgrade7") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
       }
-  
-      function upgradeAmountText() {
-        if (upgrade.key === "upgrade1") {
-          return `extra ${(upgrade.owned * upgrade.value * 100).toFixed(0)}% of NPS`;
-        } else if (upgrade.key === "upgrade2") {
-          return `${(upgrade.value * upgrade.owned * 100).toFixed(1)}% of cps multiplied by NPS`;
-        } else if (upgrade.key === "upgrade3") {
-          const amountString = game.isReadableNumbersOn
-            ? readableNumber(upgrade.value ** upgrade.owned)
-            : (upgrade.value ** upgrade.owned).toFixed(0);
-          return `You get ${amountString} per click`;
-        } else if (upgrade.key === "upgrade4") {
-          return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(0)}% of notes earned offline`;
-        } else if (upgrade.key === "upgrade5") {
-          return upgrade.owned === 1 ? `You own this` : `You do not own this`;
-        } else if (upgrade.key === "upgrade6") {
-          return upgrade.owned === 1 ? `You have access` : `Access Denied`;
-        } else if (upgrade.key === "upgrade7") {
-          return upgrade.owned === 1 ? `You own this` : `You do not own this`;
-        }
-      }
-  
-      upgradeEl.innerHTML = `
+    }
+
+    upgradeEl.innerHTML = `
         <button class="shop-item-button">${upgrade.id}</button>
         <p class="shop-item-description">${upgrade.description}</p>
         <p class="shop-item-cost">Cost: ${
@@ -372,27 +374,26 @@ function updateUpgradesDescription(game) {
         }</p>
         <p class="shop-item-text">${upgradeAmountText()}</p>
       `;
-    });}
-  
+  });
+}
 
+function updateVisualDescriptions(game) {
+  const visualItems = document.querySelectorAll(".visual-note");
 
-  function updateVisualDescriptions(game) {
-    const visualItems = document.querySelectorAll(".visual-note");
-  
-    visualItems.forEach((visualEl, index) => {
-      const visual = Object.values(game.visuals)[index];
-  
-      if (visual.owned) {
-        visualEl.style.filter = visual.selected
-          ? "brightness(1.2)"
-          : "brightness(0.9)";
-      } else if (game.money < visual.cost) {
-        visualEl.style.filter = "brightness(0.5)";
-      } else {
-        visualEl.style.filter = "brightness(1)";
-      }
-  
-      visualEl.innerHTML = `
+  visualItems.forEach((visualEl, index) => {
+    const visual = Object.values(game.visuals)[index];
+
+    if (visual.owned) {
+      visualEl.style.filter = visual.selected
+        ? "brightness(1.2)"
+        : "brightness(0.9)";
+    } else if (game.money < visual.cost) {
+      visualEl.style.filter = "brightness(0.5)";
+    } else {
+      visualEl.style.filter = "brightness(1)";
+    }
+
+    visualEl.innerHTML = `
         <button class="shop-item-button">${visual.name}</button>
         <p class="shop-item-cost">Cost: ${
           game.isReadableNumbersOn
@@ -403,70 +404,69 @@ function updateUpgradesDescription(game) {
           visual.owned ? (visual.selected ? "Selected" : "Owned") : "Not Owned"
         }</p>
       `;
-    });
-  }
-  
+  });
+}
 
 function createUpgradeElements(game, upgradeContent) {
-    upgradeContent.innerHTML = "";
-  
-    Object.values(game.upgrades).forEach((upgrade) => {
-      const upgradeEl = document.createElement("div");
-      upgradeEl.className = `shop-item stickynote no-select upgrades-note ${upgrade}`;
-  
-      const angle = Math.random() * 10 - 5;
-      let transform = `rotate(${angle}deg)`;
-      if (Math.random() < 0.05) transform += " rotate(180deg)";
+  upgradeContent.innerHTML = "";
+
+  Object.values(game.upgrades).forEach((upgrade) => {
+    const upgradeEl = document.createElement("div");
+    upgradeEl.className = `shop-item stickynote no-select upgrades-note ${upgrade}`;
+
+    const angle = Math.random() * 10 - 5;
+    let transform = `rotate(${angle}deg)`;
+    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    upgradeEl.style.transform = transform;
+
+    upgradeEl.style.margin = "10px";
+    upgradeEl.style.background = getRandomStickyNoteColor();
+
+    if (upgrade.owned + buyAmount > upgrade.max) {
+      upgradeEl.style.filter = `brightness(0.7)`;
+      upgradeEl.style.transition = `all 0.2s ease-in-out`;
+    }
+
+    upgradeEl.addEventListener("mouseenter", () => {
+      upgradeEl.style.transform = "rotate(0deg)";
+    });
+
+    upgradeEl.addEventListener("mouseleave", () => {
       upgradeEl.style.transform = transform;
-  
-      upgradeEl.style.margin = "10px";
-      upgradeEl.style.background = getRandomStickyNoteColor();
-  
-      if (upgrade.owned + buyAmount > upgrade.max) {
-        upgradeEl.style.filter = `brightness(0.7)`;
-        upgradeEl.style.transition = `all 0.2s ease-in-out`;
+    });
+
+    function upgradeAmountText() {
+      if (upgrade.key === "upgrade1") {
+        return `extra ${(
+          game.upgrades.upgrade1.owned *
+          game.upgrades.upgrade1.value *
+          100
+        ).toFixed(0)}% of NPS`;
+      } else if (upgrade.key === "upgrade2") {
+        return `${(
+          game.upgrades.upgrade2.value *
+          game.upgrades.upgrade2.owned *
+          100
+        ).toFixed(1)}% of cps multiplied by NPS`;
+      } else if (upgrade.key === "upgrade3") {
+        const amountString = game.isReadableNumbersOn
+          ? readableNumber(upgrade.value ** upgrade.owned)
+          : (upgrade.value ** upgrade.owned).toFixed(0);
+        return `You get ${amountString} per click`;
+      } else if (upgrade.key === "upgrade4") {
+        return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
+          0
+        )}% of notes earned offline`;
+      } else if (upgrade.key === "upgrade5") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
+      } else if (upgrade.key === "upgrade6") {
+        return upgrade.owned === 1 ? `You have access` : `Access Denied`;
+      } else if (upgrade.key === "upgrade7") {
+        return upgrade.owned === 1 ? `You own this` : `You do not own this`;
       }
-  
-      upgradeEl.addEventListener("mouseenter", () => {
-        upgradeEl.style.transform = "rotate(0deg)";
-      });
-  
-      upgradeEl.addEventListener("mouseleave", () => {
-        upgradeEl.style.transform = transform;
-      });
-  
-      function upgradeAmountText() {
-        if (upgrade.key === "upgrade1") {
-          return `extra ${(
-            game.upgrades.upgrade1.owned *
-            game.upgrades.upgrade1.value *
-            100
-          ).toFixed(0)}% of NPS`;
-        } else if (upgrade.key === "upgrade2") {
-          return `${(
-            game.upgrades.upgrade2.value *
-            game.upgrades.upgrade2.owned *
-            100
-          ).toFixed(1)}% of cps multiplied by NPS`;
-        } else if (upgrade.key === "upgrade3") {
-          const amountString = game.isReadableNumbersOn
-            ? readableNumber(upgrade.value ** upgrade.owned)
-            : (upgrade.value ** upgrade.owned).toFixed(0);
-          return `You get ${amountString} per click`;
-        } else if (upgrade.key === "upgrade4") {
-          return `You get ${(upgrade.value * upgrade.owned * 100).toFixed(
-            0
-          )}% of notes earned offline`;
-        } else if (upgrade.key === "upgrade5") {
-          return upgrade.owned === 1 ? `You own this` : `You do not own this`;
-        } else if (upgrade.key === "upgrade6") {
-          return upgrade.owned === 1 ? `You have access` : `Access Denied`;
-        } else if (upgrade.key === "upgrade7") {
-          return upgrade.owned === 1 ? `You own this` : `You do not own this`;
-        }
-      }
-  
-      upgradeEl.innerHTML = `
+    }
+
+    upgradeEl.innerHTML = `
         <button class="shop-item-button">${upgrade.id}</button>
         <p class="shop-item-description">${upgrade.description}</p>
         <p class="shop-item-cost">Cost: ${
@@ -476,94 +476,92 @@ function createUpgradeElements(game, upgradeContent) {
         }</p>
         <p class="shop-item-text">${upgradeAmountText()}</p>
       `;
-  
-      upgradeContent.appendChild(upgradeEl);
-  
-      const button = upgradeEl;
-      const text = upgradeEl.querySelector(".shop-item-text");
-      const costText = upgradeEl.querySelector(".shop-item-cost");
-  
-      button.addEventListener("click", () => {
-        const totalCost = getTotalCost(
-          upgrade.cost,
-          findUpgradeCost(upgrade.key),
-          buyAmount
-        );
-  
-        if (game.money >= totalCost && upgrade.owned + buyAmount <= upgrade.max) {
-          if (upgrade.key === "upgrade4" && upgrade.owned >= upgrade.max) {
-            alert("Cannot go above 100%");
-            return;
-          } else if (
-            (upgrade.key === "upgrade5" || upgrade.key === "upgrade6" || upgrade.key === "upgrade7") &&
-            upgrade.owned >= upgrade.max
-          ) {
-            alert("Cannot buy more than 1");
-            return;
-          }
-  
-          game.money -= totalCost;
-          playSoundEffects(soundEffects.orb);
-  
-          upgrade.owned += buyAmount;
-          upgrade.cost *= Math.pow(findUpgradeCost(upgrade.key), buyAmount);
-  
-          text.textContent = `${upgradeAmountText()}`;
-          costText.textContent = `Cost: ${
-            game.isReadableNumbersOn
-              ? readableNumber(upgrade.cost)
-              : upgrade.cost.toFixed(0)
-          })`;
-  
-          if (upgrade.owned + buyAmount > upgrade.max) {
-            button.style.filter = `brightness(0.7)`;
-            button.style.transition = `all 0.2s ease-in-out`;
-          }
-  
-        } else {
-          playSoundEffects(soundEffects.hover);
-        }
-      });
-    });
-  }
-  
-  
-  
 
-  function createVisualElements(game, visualContent) {
-    visualContent.innerHTML = "";
-  
-    Object.values(game.visuals).forEach((visual) => {
-      const visualEl = document.createElement("div");
-      visualEl.className = `shop-item stickynote no-select visual-note ${
-        visual.selected ? "selected" : ""
-      }`;
-  
-      const angle = Math.random() * 10 - 5;
-      let transform = `rotate(${angle}deg)`;
-      if (Math.random() < 0.05) transform += " rotate(180deg)";
-      visualEl.style.transform = transform;
-  
-      visualEl.style.margin = "10px";
-      visualEl.style.background = getRandomStickyNoteColor();
-  
-      visualEl.addEventListener("mouseenter", () => {
-        visualEl.style.transform = "rotate(0deg)";
-      });
-  
-      visualEl.addEventListener("mouseleave", () => {
-        visualEl.style.transform = transform;
-      });
-  
-      if (visual.owned) {
-        visualEl.style.filter = visual.selected
-          ? "brightness(1.2)"
-          : "brightness(0.9)";
-      } else if (visual.owned + buyAmount > 1) {
-        visualEl.style.filter = `brightness(0.7)`;
+    upgradeContent.appendChild(upgradeEl);
+
+    const button = upgradeEl;
+    const text = upgradeEl.querySelector(".shop-item-text");
+    const costText = upgradeEl.querySelector(".shop-item-cost");
+
+    button.addEventListener("click", () => {
+      const totalCost = getTotalCost(
+        upgrade.cost,
+        findUpgradeCost(upgrade.key),
+        buyAmount
+      );
+
+      if (game.money >= totalCost && upgrade.owned + buyAmount <= upgrade.max) {
+        if (upgrade.key === "upgrade4" && upgrade.owned >= upgrade.max) {
+          alert("Cannot go above 100%");
+          return;
+        } else if (
+          (upgrade.key === "upgrade5" ||
+            upgrade.key === "upgrade6" ||
+            upgrade.key === "upgrade7") &&
+          upgrade.owned >= upgrade.max
+        ) {
+          alert("Cannot buy more than 1");
+          return;
+        }
+
+        game.money -= totalCost;
+        playSoundEffects(soundEffects.orb);
+
+        upgrade.owned += buyAmount;
+        upgrade.cost *= Math.pow(findUpgradeCost(upgrade.key), buyAmount);
+
+        text.textContent = `${upgradeAmountText()}`;
+        costText.textContent = `Cost: ${
+          game.isReadableNumbersOn
+            ? readableNumber(upgrade.cost)
+            : upgrade.cost.toFixed(0)
+        })`;
+
+        if (upgrade.owned + buyAmount > upgrade.max) {
+          button.style.filter = `brightness(0.7)`;
+          button.style.transition = `all 0.2s ease-in-out`;
+        }
+      } else {
+        playSoundEffects(soundEffects.hover);
       }
-  
-      visualEl.innerHTML = `
+    });
+  });
+}
+
+function createVisualElements(game, visualContent, updateVisualDisplay) {
+  visualContent.innerHTML = "";
+
+  Object.values(game.visuals).forEach((visual) => {
+    const visualEl = document.createElement("div");
+    visualEl.className = `shop-item stickynote no-select visual-note ${
+      visual.selected ? "selected" : ""
+    }`;
+
+    const angle = Math.random() * 10 - 5;
+    let transform = `rotate(${angle}deg)`;
+    if (Math.random() < 0.05) transform += " rotate(180deg)";
+    visualEl.style.transform = transform;
+
+    visualEl.style.margin = "10px";
+    visualEl.style.background = getRandomStickyNoteColor();
+
+    visualEl.addEventListener("mouseenter", () => {
+      visualEl.style.transform = "rotate(0deg)";
+    });
+
+    visualEl.addEventListener("mouseleave", () => {
+      visualEl.style.transform = transform;
+    });
+
+    if (visual.owned) {
+      visualEl.style.filter = visual.selected
+        ? "brightness(1.2)"
+        : "brightness(0.9)";
+    } else if (visual.owned + buyAmount > 1) {
+      visualEl.style.filter = `brightness(0.7)`;
+    }
+
+    visualEl.innerHTML = `
         <button class="shop-item-button">${visual.name}</button>
         <p class="shop-item-cost">Cost: ${
           game.isReadableNumbersOn
@@ -574,37 +572,34 @@ function createUpgradeElements(game, upgradeContent) {
           visual.owned ? (visual.selected ? "Selected" : "Owned") : "Not Owned"
         }</p>
       `;
-  
-      visualEl.addEventListener("click", () => {
-        if (!visual.owned) {
-          if (game.money >= visual.cost) {
-            game.money -= visual.cost;
-            visual.owned = true;
-            playSoundEffects(soundEffects.orb);
-          } else {
-            playSoundEffects(soundEffects.hover);
-            return;
-          }
+
+    visualEl.addEventListener("click", () => {
+      if (!visual.owned) {
+        if (game.money >= visual.cost) {
+          game.money -= visual.cost;
+          visual.owned = true;
+          playSoundEffects(soundEffects.orb);
         } else {
-          // Deselect others of the same type
-          Object.values(game.visuals).forEach((v) => {
-            if (v.type === visual.type) v.selected = false;
-          });
-  
-          // Select this visual
-          visual.selected = true;
+          playSoundEffects(soundEffects.hover);
+          return;
         }
-  
-        // updateVisualDescriptions();
-        // updateVisualDisplay();
-      });
-  
-      visualContent.appendChild(visualEl);
+      } else {
+        // Deselect others of the same type
+        Object.values(game.visuals).forEach((v) => {
+          if (v.type === visual.type) v.selected = false;
+        });
+
+        // Select this visual
+        visual.selected = true;
+      }
+
+      updateVisualDescriptions(game);
+      updateVisualDisplay();
     });
-  
-    // updateVisualDescriptions();
-    // updateVisualDisplay();
-  }
-  
-  
- 
+
+    visualContent.appendChild(visualEl);
+  });
+
+  updateVisualDescriptions(game);
+  updateVisualDisplay();
+}
