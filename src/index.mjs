@@ -203,7 +203,7 @@ function calculateNoteValue() {
   game.noteValue = value;
 }
 
-function calculateMoneyPerSecond(initial) {
+export function calculateMoneyPerSecond(initial) {
   let moneyPerSec = 0;
   const rateDisplays = document.getElementById("rate-displays");
 
