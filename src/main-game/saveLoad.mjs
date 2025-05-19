@@ -252,7 +252,8 @@ function migrateOldSaveIfNeeded(saveSlot = "save1") {
   const oldKey = "stickyNotesGame";
 
   // If new save already exists, don't overwrite it
-  if (localStorage.getItem(newKey)) return;
+  // if (localStorage.getItem(newKey)) return;
+  console.log(localStorage.getItem(oldKey));
 
   const oldSaveStr = localStorage.getItem(oldKey);
   if (!oldSaveStr) return;
