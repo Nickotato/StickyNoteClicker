@@ -20,7 +20,7 @@ import {
   getRandomStickyNoteColor,
   spawnFloatingNote,
   spawnFloatingNumber,
-} from "./utils.mjs";
+} from "../utils.mjs";
 
 export { save, load, newGame };
 
