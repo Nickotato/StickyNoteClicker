@@ -54,6 +54,8 @@ function save(game) {
 }
 
 function load(game, saveSlot = "save1") {
+  migrateOldSaveIfNeeded(saveSlot);
+  
   const savedGameStr = localStorage.getItem(`stickyNotesGame_${saveSlot}`);
   if (!savedGameStr) {
     console.warn(`No save data found for ${saveSlot}. Starting new game`);
@@ -242,4 +244,65 @@ Object.keys(defaultWorkers).forEach((key) => {
   clearAchievementNotes();
 
   alert("New game started!");
+}
+
+
+function migrateOldSaveIfNeeded(saveSlot = "save1") {
+  const newKey = `stickyNotesGame_${saveSlot}`;
+  const oldKey = "stickyNotesGame";
+
+  // If new save already exists, don't overwrite it
+  if (localStorage.getItem(newKey)) return;
+
+  const oldSaveStr = localStorage.getItem(oldKey);
+  if (!oldSaveStr) return;
+
+  try {
+    const oldSave = JSON.parse(oldSaveStr);
+    const migratedSave = {
+      money: oldSave.money || 0,
+      totalClicks: oldSave.totalClicks || 0,
+      totalNotes: oldSave.totalNotes || 0,
+      unlockedAchievements: oldSave.unlockedAchievements || 0,
+      isReadableNumbersOn: oldSave.isReadableNumbersOn || false,
+      clickTimestamps: oldSave.clickTimestamps || [],
+      clickBonus: oldSave.clickBonus || 1,
+      upgrade1Bonus: oldSave.upgrade1Bonus || 0,
+      upgrade2Bonus: oldSave.upgrade2Bonus || 0,
+      totalRate: oldSave.totalRate || 0,
+      lastOnline: parseInt(localStorage.getItem("lastOnline")) || Date.now(),
+      workers: {},
+      upgrades: {},
+      achievements: oldSave.achievements || [],
+      visuals: {}, // Optional, or migrate if relevant
+    };
+
+    // Migrate workers
+    if (oldSave.workers) {
+      Object.keys(oldSave.workers).forEach((key) => {
+        const w = oldSave.workers[key];
+        migratedSave.workers[key] = {
+          id: key,
+          owned: w.owned || 0,
+          visible: w.visible || false,
+        };
+      });
+    }
+
+    // Migrate upgrades
+    if (oldSave.upgrades) {
+      Object.keys(oldSave.upgrades).forEach((key) => {
+        const u = oldSave.upgrades[key];
+        migratedSave.upgrades[key] = {
+          owned: u.owned || 0,
+        };
+      });
+    }
+
+    // Save the migrated version under the new key
+    localStorage.setItem(newKey, JSON.stringify(migratedSave));
+    console.log("Old save migrated to new format.");
+  } catch (e) {
+    console.error("Failed to migrate old save:", e);
+  }
 }
