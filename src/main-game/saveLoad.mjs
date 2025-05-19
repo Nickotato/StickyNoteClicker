@@ -12,6 +12,15 @@ import {
 import { initializeShop, updateShopDescriptions } from "../shop.mjs";
 import { WorkerClass } from "../defaults/classes/Worker.mjs";
 import {calculateMoneyPerSecond} from "../index.mjs"
+import {
+  readableNumber,
+  getTotalCost,
+  getCardSrc,
+  capitalize,
+  getRandomStickyNoteColor,
+  spawnFloatingNote,
+  spawnFloatingNumber,
+} from "./utils.mjs";
 
 export { save, load, newGame };
 
