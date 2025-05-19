@@ -9,7 +9,7 @@ import {
   playSoundEffects,
 } from "./audio.mjs";
 
-export function setUpSettings(game) {
+export function setUpSettings(game, initGame) {
   const navLayoutNotes = document.querySelectorAll(".navLayout-toggle");
   navLayoutNotes.forEach((note) => {
     note.addEventListener("click", () => {
@@ -18,6 +18,7 @@ export function setUpSettings(game) {
   });
   audioSettingsSetup();
   readableNumbersSetup(game);
+  setUpSaveNotes(initGame);
 }
 
 export function changeNavlayout(note) {
@@ -155,5 +156,26 @@ export function readableNumbersSetup(game) {
     game.isReadableNumbersOn = !game.isReadableNumbersOn;
     newToggle.textContent = game.isReadableNumbersOn ? "On" : "Off";
     clone.classList.toggle("green", game.isReadableNumbersOn);
+  });
+}
+
+export function setUpSaveNotes(initGame) {
+  document.getElementById("save1-note").addEventListener("click", () => {
+    initGame("save1");
+  });
+  document.getElementById("save2-note").addEventListener("click", () => {
+    initGame("save2");
+  });
+  
+}
+
+export function updateSaveSlotUI(selectedSlot) {
+  ["save1", "save2"].forEach((slot) => {
+    document.getElementById(`${slot}-toggle`).innerText =
+      slot === selectedSlot ? "Selected" : "Not Selected";
+
+    document
+      .getElementById(`${slot}-note`)
+      .classList.toggle("green", slot === selectedSlot);
   });
 }

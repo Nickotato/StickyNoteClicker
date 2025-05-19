@@ -1,3 +1,5 @@
+export {readableNumber, getCost, getTotalCost, getCardSrc, capitalize, getRandomStickyNoteColor, spawnFloatingNote, spawnFloatingNumber}
+
 const stickyNoteColors = {
   pink1: "#ff7eb9",
   pink2: "#ff65a3",
@@ -15,7 +17,7 @@ const stickyNoteColorChances = [
   { color: stickyNoteColors.lightBlue, chance: 0.14 },
 ];
 
-export function readableNumber(number) {
+ function readableNumber(number) {
   if (number < 1000) {
     return number.toFixed(0);
   }
@@ -88,15 +90,20 @@ export function readableNumber(number) {
   return base.toFixed(2) + "e" + exponent;
 }
 
-export function getTotalCost(baseCost, growthRate, amount) {
-  if (1 === growthRate) {
-    // if (amount > 1) return "cannot buy more than 1"
-    return baseCost;
-  }
-  return baseCost * ((1 - Math.pow(growthRate, amount)) / (1 - growthRate));
+function getCost(baseCost, growthRate, amountOwned) {
+  Math.floor(baseCost * Math.pow(growthRate, amountOwned));
 }
 
-export function getCardSrc(cardName) {
+ function getTotalCost(cost, growthRate, amount) {
+  if (1 === growthRate) {
+    // if (amount > 1) return "cannot buy more than 1"
+    return cost;
+  }
+  return cost * ((1 - Math.pow(growthRate, amount)) / (1 - growthRate));
+  // default.baseCost * growthMultiplier^amount.owned;
+}
+
+ function getCardSrc(cardName) {
   switch (cardName) {
     // Hearts
     case "2_of_hearts":
@@ -244,11 +251,11 @@ export function getCardSrc(cardName) {
   }
 }
 
-export function capitalize(str) {
+ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function getRandomStickyNoteColor() {
+ function getRandomStickyNoteColor() {
   const rand = Math.random();
   let cumulative = 0;
   for (let entry of stickyNoteColorChances) {
@@ -258,12 +265,26 @@ export function getRandomStickyNoteColor() {
   return stickyNoteColorChances[stickyNoteColorChances.length - 1].color;
 }
 
-export function findUpgradeCost(key) {
-  if (key === "upgrade1") return 3;
-  else if (key === "upgrade2") return 10;
-  else if (key === "upgrade3") return 2.2;
-  else if (key === "upgrade4") return 5;
-  else if (key === "upgrade5") return 1;
-  else if (key === "upgrade6") return 1;
-  else if (key === "upgrade7") return 1;
+ function spawnFloatingNote(x, y) {
+  const note = document.createElement("div");
+  note.className = "floating-note";
+  note.style.left = `${x}px`;
+  note.style.top = `${y}px`;
+  note.style.backgroundColor = getRandomStickyNoteColor();
+
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 1200);
+}
+
+ function spawnFloatingNumber(x, y, amount, game) {
+  const number = document.createElement("div");
+  number.className = "floating-number";
+  number.style.left = `${x}px`;
+  number.style.top = `${y}px`;
+  number.textContent = `+${
+    game.isReadableNumbersOn ? readableNumber(amount) : amount.toFixed(0)
+  }`;
+
+  document.body.appendChild(number);
+  setTimeout(() => number.remove(), 800);
 }

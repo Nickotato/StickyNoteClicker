@@ -29,7 +29,8 @@ import {
   getCardSrc,
   capitalize,
   getRandomStickyNoteColor,
-  findUpgradeCost,
+  spawnFloatingNote,
+  spawnFloatingNumber,
 } from "./utils.mjs";
 
 import {
@@ -38,7 +39,7 @@ import {
   defaultAchievements,
   defaultVisuals,
 } from "./defaults/defaults.mjs";
-import { setUpSettings } from "./settings.mjs";
+import { setUpSettings, updateSaveSlotUI } from "./settings.mjs";
 import {
   initializeShop,
   updateShopDescriptions,
@@ -102,7 +103,7 @@ const game = {
   get money() {
     return this._money;
   },
-  isReadableNumbersOn: false,
+  isReadableNumbersOn: true,
   workers: { ...defaultWorkers },
   upgrades: { ...defaultUpgrades },
   visuals: { ...defaultVisuals },
@@ -110,6 +111,7 @@ const game = {
   unlockedAchievements: 0,
   totalClicks: 0,
   totalNotes: 0,
+  noteValue: 1,
   clickTimestamps: [],
   clickBonus: 1,
   upgrade1Bonus: 0,
@@ -135,31 +137,14 @@ document.addEventListener(
   { once: true }
 );
 
-document.getElementById("save1-note").addEventListener("click", () => {
-  initGame("save1");
-});
-document.getElementById("save2-note").addEventListener("click", () => {
-  initGame("save2");
-});
-
-function updateSaveSlotUI(selectedSlot) {
-  ["save1", "save2"].forEach((slot) => {
-    document.getElementById(`${slot}-toggle`).innerText =
-      slot === selectedSlot ? "Selected" : "Not Selected";
-
-    document
-      .getElementById(`${slot}-note`)
-      .classList.toggle("green", slot === selectedSlot);
-  });
-}
-
 mainButton.addEventListener("click", (event) => {
   event.stopPropagation();
   playSoundEffects(soundEffects.click1);
 
   if (game.upgrades.upgrade3.owned > 0)
     game.clickBonus =
-      1 * game.upgrades.upgrade3.value ** game.upgrades.upgrade3.owned;
+      game.noteValue *
+      game.upgrades.upgrade3.value ** game.upgrades.upgrade3.owned;
   game.money += game.clickBonus;
   game.totalNotes += game.clickBonus;
   game.totalClicks++;
@@ -181,7 +166,7 @@ mainButton.addEventListener("click", (event) => {
   }
 
   spawnFloatingNote(x, y);
-  spawnFloatingNumber(x, y, game.clickBonus);
+  spawnFloatingNumber(x, y, game.clickBonus, game);
 
   if (!isClicking) {
     isClicking = true;
@@ -210,43 +195,12 @@ mainButton.addEventListener("click", (event) => {
   }, 500);
 });
 
-function spawnFloatingNote(x, y) {
-  const note = document.createElement("div");
-  note.className = "floating-note";
-  note.style.left = `${x}px`;
-  note.style.top = `${y}px`;
-  note.style.backgroundColor = getRandomStickyNoteColor();
-
-  document.body.appendChild(note);
-  setTimeout(() => note.remove(), 1200);
-}
-
-function spawnFloatingNumber(x, y, amount) {
-  const number = document.createElement("div");
-  number.className = "floating-number";
-  number.style.left = `${x}px`;
-  number.style.top = `${y}px`;
-  number.textContent = `+${
-    game.isReadableNumbersOn ? readableNumber(amount) : amount.toFixed(0)
-  }`;
-
-  document.body.appendChild(number);
-  setTimeout(() => number.remove(), 800);
-}
-
-function updateMoneyText() {
-  if (game.isReadableNumbersOn)
-    moneyText.textContent = `You have ${readableNumber(
-      game.money
-    )} sticky notes`;
-  else moneyText.textContent = `You have ${game.money.toFixed(0)} sticky notes`;
-}
-
-function updateMoneyPerSecondText() {
-  const NPS = calculateMoneyPerSecond();
-  if (game.isReadableNumbersOn)
-    perSec.textContent = `${readableNumber(NPS)} notes per second`;
-  else perSec.textContent = `${NPS.toFixed(0)} notes per second`;
+function calculateNoteValue() {
+  let value = 1;
+  if (game.upgrades.upgrade5.owned) {
+    value *= game.upgrades.upgrade5.value;
+  }
+  game.noteValue = value;
 }
 
 function calculateMoneyPerSecond(initial) {
@@ -267,9 +221,9 @@ function calculateMoneyPerSecond(initial) {
         bonusUnits * worker.produce * (1 + game.upgrades.upgrade7.value);
       const normalIncome = normalUnits * worker.produce;
 
-      baseIncome = bonusIncome + normalIncome;
+      baseIncome = bonusIncome + normalIncome; // * game.noteValue;
     } else {
-      baseIncome = worker.owned * worker.produce;
+      baseIncome = worker.owned * worker.produce; // * game.noteValue;
     }
 
     workerIncome += baseIncome;
@@ -308,15 +262,30 @@ function calculateMoneyPerSecond(initial) {
   }
 
   game.totalRate = moneyPerSec - initialMoneyPerSec;
-  if (game.upgrades.upgrade5.owned > 0) {
-    moneyPerSec *= game.upgrades.upgrade5.value;
-  }
+  // if (game.upgrades.upgrade5.owned > 0) {
+  moneyPerSec *= game.noteValue;
+  // }
   if (planeMultiplier > 0) {
     moneyPerSec += planeMultiplier * initialMoneyPerSec;
   }
   updateRateDisplays(moneyPerSec);
 
   return moneyPerSec;
+}
+
+function updateMoneyText() {
+  if (game.isReadableNumbersOn)
+    moneyText.textContent = `You have ${readableNumber(
+      game.money
+    )} sticky notes`;
+  else moneyText.textContent = `You have ${game.money.toFixed(0)} sticky notes`;
+}
+
+function updateMoneyPerSecondText() {
+  const NPS = calculateMoneyPerSecond();
+  if (game.isReadableNumbersOn)
+    perSec.textContent = `${readableNumber(NPS)} notes per second`;
+  else perSec.textContent = `${NPS.toFixed(0)} notes per second`;
 }
 
 function calculateCPS() {
@@ -357,13 +326,19 @@ function updateRateDisplays(moneyPerSec) {
 
 function updateVisualDisplay() {
   const selectedVisuals = Object.values(game.visuals).filter((v) => v.selected);
-  const mainImage = document.getElementById("main-note-img");
 
   selectedVisuals.forEach((visual) => {
     if (visual.type === "note") {
       if (visual.id === "clearNote") mainButton.innerHTML = "";
       else
         mainButton.innerHTML = `<img src=${visual.image} class="main-note-img"/>`;
+    } else if (visual.type === "note-color" && visual.selected) {
+      mainButton.style.background = visual.color;
+    } else if (visual.type === "background" && visual.selected) {
+      const leftSection = document.querySelector(".left-section");
+      if (visual.image)
+        leftSection.style.backgroundImage = `url(${visual.image})`;
+      if (visual.color) leftSection.style.background = visual.color;
     }
   });
 }
@@ -375,7 +350,7 @@ function initGame(saveSlot = "save1") {
   if (localStorage.getItem(saveKey) != null) {
     load(game, saveSlot); // Load existing save
   } else {
-    newGame(saveSlot, false); // No confirm if it's first-time init
+    newGame(game, saveSlot, false); // No confirm if it's first-time init
   }
   updateMoneyText();
   updateMoneyPerSecondText();
@@ -384,15 +359,16 @@ function initGame(saveSlot = "save1") {
   updateSaveSlotUI(saveSlot);
   initializeShop(game, updateVisualDisplay);
   moveShopSectionIfMobile();
-  setUpSettings(game);
+  setUpSettings(game, initGame);
   initializeCasino(game, mainContainer);
 
   document.getElementById("delete-save").addEventListener("click", () => {
-    newGame(game.currentSaveSlot); // Confirmed reset on delete
+    newGame(game, game.currentSaveSlot); // Confirmed reset on delete
   });
 }
 
 function update() {
+  calculateNoteValue();
   game.money += calculateMoneyPerSecond() / 10;
   game.totalNotes += calculateMoneyPerSecond() / 10;
   updateMoneyPerSecondText();

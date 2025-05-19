@@ -1,5 +1,4 @@
 Fix games.
-Remove Achievements when save deleted.
 Fix visuals in mobile.
 Find a favicon.
 paperclips.
@@ -12,6 +11,9 @@ Add debt achievement.
 Insurance mechanic to casino.
 Make Saxophone play shreksiphone.
 Remake paper airplanes.
+Add Upgrade Classes - maybe for upgrade and achievements too.
+Hide maxed out upgrades.
+upgrade to double workers production.
 
 Completed:
 upgrade to increase value(like super glue);
@@ -25,3 +27,8 @@ Readable numbers toggle stays on when reload.
 Add sticky note skins to make it better.
 Allow for multiple save files.
 Remove Casino Note on delete save.
+Add colored notes to visuals.
+Add a note value.
+Remove find upgrade cost and add it to the upgrades file.
+Remove Achievements when save deleted.
+Add Worker Classes

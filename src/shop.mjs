@@ -3,8 +3,8 @@ import {
   readableNumber,
   getTotalCost,
   getRandomStickyNoteColor,
-  findUpgradeCost,
 } from "./utils.mjs";
+import { WorkerClass } from "./defaults/classes/Worker.mjs";
 
 let buyAmount = 1;
 
@@ -213,7 +213,7 @@ function createWorkerElements(game, workerContent) {
     workerEl.style.margin = "10px";
     workerEl.style.background = getRandomStickyNoteColor();
 
-    if (!worker.visible && game.money >= worker.cost * 0.9) {
+    if (!worker.visible && game.money >= worker.cost * 0.6) {
       worker.visible = true;
     }
     const isUnlocked = worker.visible;
@@ -237,6 +237,8 @@ function createWorkerElements(game, workerContent) {
         <p class="shop-item-produce">Produces: ${worker.produce}/s</p>
       `;
     }
+    console.log(worker instanceof WorkerClass); // should be true
+    console.log(worker.owned);
 
     workerContent.appendChild(workerEl);
 
@@ -255,7 +257,7 @@ function createWorkerElements(game, workerContent) {
 
         game.money -= totalCost;
         worker.owned += buyAmount;
-        worker.cost *= Math.pow(1.15, buyAmount);
+        // worker.cost *= Math.pow(1.15, buyAmount);
 
         const ownedText = workerEl.querySelector(".shop-item-owned");
         const costText = workerEl.querySelector(".shop-item-cost");
@@ -283,7 +285,7 @@ function updateWorkerDescriptions(game) {
 
   workerItems.forEach((workerEl, index) => {
     const worker = Object.values(game.workers)[index];
-    if (!worker.visible && game.money >= worker.cost * 0.9) {
+    if (!worker.visible && game.money >= worker.cost * 0.6) {
       worker.visible = true;
     }
     const isUnlocked = worker.visible;
@@ -327,7 +329,7 @@ function updateUpgradesDescription(game) {
 
     const totalCost = getTotalCost(
       upgrade.cost,
-      findUpgradeCost(upgrade.key),
+      upgrade.costMultiplier,
       buyAmount
     );
 
@@ -486,7 +488,7 @@ function createUpgradeElements(game, upgradeContent) {
     button.addEventListener("click", () => {
       const totalCost = getTotalCost(
         upgrade.cost,
-        findUpgradeCost(upgrade.key),
+        upgrade.costMultiplier,
         buyAmount
       );
 
@@ -508,7 +510,7 @@ function createUpgradeElements(game, upgradeContent) {
         playSoundEffects(soundEffects.orb);
 
         upgrade.owned += buyAmount;
-        upgrade.cost *= Math.pow(findUpgradeCost(upgrade.key), buyAmount);
+        upgrade.cost *= Math.pow(upgrade.costMultiplier, buyAmount);
 
         text.textContent = `${upgradeAmountText()}`;
         costText.textContent = `Cost: ${
