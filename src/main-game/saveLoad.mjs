@@ -11,6 +11,7 @@ import {
 } from "../achivementsLogic.mjs";
 import { initializeShop, updateShopDescriptions } from "../shop.mjs";
 import { WorkerClass } from "../defaults/classes/Worker.mjs";
+import {calculateMoneyPerSecond} from "../index.mjs"
 
 export { save, load, newGame };
 
