@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: "Sniglet", system-ui, sans-serif;
+  font-family: "Sniglet", system-ui;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -210,7 +210,8 @@ body {
   flex-wrap: wrap;
   align-content: center;
   justify-content: center;
-  padding: 40px;
+  padding: 100px 200px 0px 200px;
+  /* padding-top: 100px; */
   gap: 30px;
   top: 100vh;
   box-sizing: border-box;
@@ -302,6 +303,33 @@ input[type="range"]::-moz-range-thumb {
 input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.2);
 }
+
+.settings-note-button-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.settings-note-button {
+  margin-bottom: 0px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  width: 90%;
+  border: none;
+  background: #fff56c;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 5px;
+  font-family: "Sniglet", system-ui, sans-serif;
+}
+
+.settings-note-button:hover {
+  filter: brightness(0.9);
+}
+
 /* END OF SETTINGS SECTION */
 /* ACHIEVEMENTS SECTION */
 #achievements-section {
@@ -360,11 +388,17 @@ input[type="range"]::-moz-range-thumb:hover {
   top: 5vh;
   left: 5vh;
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
+  /* display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 20px; */
 }
 
 .move-screen-buttons {
   margin-right: 20px;
+  margin-bottom: 10px;
   cursor: pointer;
 }
 
@@ -388,6 +422,11 @@ input[type="range"]::-moz-range-thumb:hover {
   filter: brightness(0.95);
 }
 
+.main-note-img {
+  max-width: 80%;
+  max-height: 80%;
+}
+
 .left-section {
   width: 60%;
   height: 100%;
@@ -398,6 +437,7 @@ input[type="range"]::-moz-range-thumb:hover {
   text-align: center;
   padding: 20px;
   box-sizing: border-box;
+  
 }
 
 .shop-section {
@@ -519,15 +559,15 @@ input[type="range"]::-moz-range-thumb:hover {
 /* Simulate tape */
 .bulkBuySection::before,
 .bulkBuySection::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 50px;
   height: 12px;
-  background: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.6);
   top: -6px;
   transform: rotate(-10deg);
   border-radius: 2px;
-  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
 }
 
@@ -541,11 +581,11 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .bulkBuyButton {
- cursor: pointer;
- display: flex;
- justify-content: center;
- align-items: center;
- text-align: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 /* CASINO SECTION */
@@ -558,8 +598,8 @@ input[type="range"]::-moz-range-thumb:hover {
   color: #333;
   text-align: center;
   padding: 2rem;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
   border: 4px solid #fdd835; /* Sticky note border */
   box-sizing: border-box;
 }
@@ -576,7 +616,7 @@ input[type="range"]::-moz-range-thumb:hover {
   padding: 1rem 2rem;
   font-size: 2.5rem;
   transform: rotate(-3deg);
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
   border: 2px solid #fbc02d;
   border-radius: 12px;
   margin-bottom: 2rem;
@@ -596,8 +636,7 @@ input[type="range"]::-moz-range-thumb:hover {
   background: #fffcab;
   border: 2px solid #d1c700;
   border-radius: 10px;
-  box-shadow: 
-    2px 2px 5px rgba(0, 0, 0, 0.5),
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset 0 0 10px rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
@@ -625,7 +664,7 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .slot::before {
-  content: '';
+  content: "";
   width: 12px;
   height: 12px;
   background: red;
@@ -634,7 +673,7 @@ input[type="range"]::-moz-range-thumb:hover {
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 0 3px rgba(0,0,0,0.8);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes bounce {
@@ -679,33 +718,33 @@ input[type="range"]::-moz-range-thumb:hover {
   font-size: 1.2rem;
 }
 
-
 .casino-controls label {
   background: #ffecb3;
   padding: 0.5rem 1rem;
   border: 2px solid #fbc02d;
   border-radius: 10px;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   transform: rotate(-2deg);
 }
 
-.casino-controls input, 
+.casino-controls input,
 .casino-controls select {
   background: #fffde7;
   border: 2px solid #fdd835;
   border-radius: 8px;
   padding: 0.5rem;
   font-size: 1rem;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.casino-controls input, .casino-controls select, .casino-controls button {
+.casino-controls input,
+.casino-controls select,
+.casino-controls button {
   padding: 0.5rem;
   font-size: 1rem;
   border-radius: 0.5rem;
   border: none;
 }
-
 
 /* Play Button like a sticky note */
 #play-game {
@@ -716,7 +755,7 @@ input[type="range"]::-moz-range-thumb:hover {
   border-radius: 10px;
   font-size: 1.2rem;
   cursor: pointer;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
   transform: rotate(1deg);
   transition: background 0.3s ease, transform 0.2s;
 }
@@ -732,19 +771,9 @@ input[type="range"]::-moz-range-thumb:hover {
   padding: 0.5rem 1rem;
   border: 2px solid #fbc02d;
   border-radius: 10px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
   transform: rotate(2deg);
 }
-
-/* #game-result {
-  background: #ffccbc;
-  padding: 0.5rem 1rem;
-  border: 2px solid #ff8a65;
-  border-radius: 10px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-  transform: rotate(-1deg);
-  font-weight: bold;
-} */
 
 .blackjack-hand {
   margin-bottom: 1rem;
@@ -768,9 +797,6 @@ input[type="range"]::-moz-range-thumb:hover {
   filter: brightness(0.5);
 }
 
-
-
-
 /* General Styles for the casino game section */
 #casino-game-section {
   left: -100vw;
@@ -785,17 +811,16 @@ input[type="range"]::-moz-range-thumb:hover {
 .blackjack-theme {
   background: radial-gradient(circle at center, #35654d 0%, #1e3c2f 100%);
   border: 5px solid #2ecc71;
-  border-radius: 20px;
   padding: 20px 40px;
   text-align: center;
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0,0,0,0.5);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
 }
 
 /* Table Edge (semi-circle effect) */
 .blackjack-theme::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -50px;
   left: 0;
@@ -813,7 +838,8 @@ input[type="range"]::-moz-range-thumb:hover {
   height: auto;
   border-radius: 8px;
   border: 2px solid #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(255, 255, 255, 0.2);
   transition: transform 0.2s ease;
 }
 
@@ -849,14 +875,14 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Headings and Text */
 .blackjack-theme h2 {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-size: 2.5rem;
   color: gold;
   text-shadow: 0 0 10px rgba(255, 255, 0, 0.7);
 }
 
 .blackjack-theme h3 {
-  font-family: 'Verdana', sans-serif;
+  font-family: "Verdana", sans-serif;
   font-size: 1.5rem;
   color: #fff;
   margin-top: 1rem;
@@ -875,12 +901,11 @@ input[type="range"]::-moz-range-thumb:hover {
   border: 2px solid #2ecc71;
 }
 
-
 /* Roulette Theme */
 .roulette-theme {
   background-color: #f44336;
   color: white;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   border: 2px solid #ffeb3b;
 }
 
@@ -892,7 +917,7 @@ input[type="range"]::-moz-range-thumb:hover {
 .slots-theme {
   background-color: #3f51b5;
   color: white;
-  font-family: 'Comic Sans MS', sans-serif;
+  font-family: "Comic Sans MS", sans-serif;
   border: 2px solid #ff4081;
 }
 
@@ -902,16 +927,83 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Ride the Bus Theme */
 .ride-the-bus-theme {
-  background-color: #8bc34a;
-  color: white;
-  font-family: 'Times New Roman', serif;
-  border: 2px solid #009688;
+  background: #fef9e7; /* Light paper tone */
+  color: #333;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  border: 4px solid #fdd835;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 3px 3px 6px rgba(0, 0, 0, 0.2);
+  /* transform: rotate(-1deg); */
+  box-sizing: border-box;
+}
+
+.ride-the-bus-theme .cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ride-the-bus-theme .cards img.card {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.ride-the-bus-theme .cards img.card:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+
+.ride-the-bus-theme .ride-the-bus-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.ride-the-bus-theme button {
+  background: #ffecb3;
+  color: #5d4037;
+  border: 2px solid #fbc02d;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  transform: rotate(-1deg);
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.ride-the-bus-theme button:hover {
+  background: #fff176;
+  transform: rotate(0deg) scale(1.05);
 }
 
 .ride-the-bus-theme h2 {
-  color: #009688;
+  background: #fff176;
+  color: #5d4037;
+  padding: 1rem 2rem;
+  font-size: 2.5rem;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+  border: 2px solid #fbc02d;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 2rem;
 }
 
+.ride-the-bus-theme p {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
 
 .game-selection {
   display: flex;
@@ -925,8 +1017,8 @@ input[type="range"]::-moz-range-thumb:hover {
   padding: 1rem 2rem;
   border: 2px solid #fbc02d;
   border-radius: 12px;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  font-family: "Comic Sans MS", cursive, sans-serif;
   font-size: 1.2rem;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.3s ease;
@@ -943,7 +1035,7 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 #bet-amount-slider {
-  width: 80%;
+  width: 40%;
 }
 
 #bet-amount-input {
@@ -951,6 +1043,44 @@ input[type="range"]::-moz-range-thumb:hover {
   margin-left: 1rem;
 }
 
+/* styles.css */
+.slot-reels {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.reel {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #333;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 80px;
+  background: #fff;
+}
+
+.roulette-wheel-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.roulette-wheel {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-image: conic-gradient(
+    red 0deg 9.73deg,
+    black 9.73deg 19.46deg,
+    red 19.46deg 29.19deg,
+    black 29.19deg 38.92deg,
+    /* repeat to 360 degrees */ green 351.27deg 360deg
+  );
+  border: 5px solid #222;
+}
 
 /* END OF CASINO SECTION */
 
@@ -1043,12 +1173,12 @@ input[type="range"]::-moz-range-thumb:hover {
   cursor: pointer;
   animation: fly 10s linear forwards, float 2s ease-in-out infinite;
   transform-origin: center;
-  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+  filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
   background: transparent;
 }
 
 .airplane::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -1060,7 +1190,7 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .airplane::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 15px;
   top: 0;
@@ -1071,8 +1201,7 @@ input[type="range"]::-moz-range-thumb:hover {
   border-bottom: 25px solid transparent;
 }
 
-
-.clipboard-paper::before {
+/* .clipboard-paper::before {
   content: '',
   position: 'absolute',
   top: '-8px', // Paper edge slightly above the main paper element
@@ -1084,17 +1213,27 @@ input[type="range"]::-moz-range-thumb:hover {
   borderRadius: '6px', // Slightly rounded edges for the curl effect
   zIndex: '1020', // Ensure it is above the paper
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15)', // Optional shadow for the curled paper effect
-}
+} */
 
 @keyframes fly {
-  from { left: -80px; }
-  to { left: 110%; }
+  from {
+    left: -80px;
+  }
+  to {
+    left: 110%;
+  }
 }
 
 @keyframes float {
-  0%   { transform: translateY(0) rotate(45deg); }
-  50%  { transform: translateY(-15px) rotate(45deg); }
-  100% { transform: translateY(0) rotate(45deg); }
+  0% {
+    transform: translateY(0) rotate(45deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(45deg);
+  }
+  100% {
+    transform: translateY(0) rotate(45deg);
+  }
 }
 
 .pop {
@@ -1103,8 +1242,14 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 @keyframes pop {
-  0%   { transform: scale(1) rotate(45deg); opacity: 1; }
-  100% { transform: scale(1.8) rotate(45deg); opacity: 0; }
+  0% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.8) rotate(45deg);
+    opacity: 0;
+  }
 }
 
 @keyframes fall {
@@ -1155,6 +1300,21 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 /* MEDIA QUERIES  */
+
+@media (max-width: 1400px) {
+  .settings-note {
+    width: 130px;
+    height: 130px;
+    text-align: center
+  }
+  .settings-note-button {
+    margin-top: 2px;
+    padding: 5px;
+  }
+  .settings-note-button:nth-child(1) { 
+    margin-top: 10px;
+  }
+}
 
 @media (max-width: 768px) {
   #main-section {
